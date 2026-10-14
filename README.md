@@ -5,6 +5,9 @@ A simple hospital administration web application for managing
 patients, doctors, appointments and medical records.
 The project focuses on building an automated DevOps pipeline.
 
+**GitHub Project (backlog and Kanban board):** <https://github.com/users/ceciliagalvaoo/projects/3>.
+The way the backlog is tracked on GitHub is described in §10.
+
 ## 2. Requirement analysis
 
 ### 2.1 Functional requirements
@@ -504,6 +507,7 @@ passing required checks.
 - Changes are merged into main through a pull request, never pushed directly.
 - Relevant unit tests are written and pass in CI.
 - The end-to-end test for the affected workflow passes.
+- Manual test cases, where defined, are executed and documented.
 - Authorisation tests verify relevant allowed and denied access.
 - The container image builds successfully and is published to
   GitHub Container Registry (GHCR).
@@ -582,7 +586,7 @@ The backlog is organised into epics, user stories and implementation tasks.
 - Existing identifiers US-01 to US-21 remain unchanged.
 - US-22 to US-26 make the platform and pipeline requirements explicit.
 - Task identifiers follow T-XX.Y, where XX identifies the parent story.
-- Each task becomes a GitHub Issue titled `T-XX.Y <short task description>`, worked on a branch named `feature/US-XX-<short-name>` and merged through a pull request.
+- Each task becomes a GitHub Issue titled `T-XX.Y — <short task description>`, worked on a branch named `<issue-number>-<task-id>-<short-description>` and merged through a pull request (see §10.7).
 - "Blocked by" identifies prerequisites. "None" means no backlog prerequisite.
 - Each task has one owner: the project developer, because this is an individual project.
 - Each task must have a clear completion condition and should fit into a working session. Larger tasks will be split during refinement.
@@ -1218,7 +1222,7 @@ They may be selected when required work is complete and capacity remains. They w
 
 - Sprint items will be tracked in the repository-linked GitHub Project.
 - The Sprint field will use two-week iterations.
-- Status values will be Todo, In Progress, In review and Done.
+- Status values are Backlog, Ready, In Progress, In Review and Done (see §10.4).
 - Only stories satisfying the Definition of Done contribute to velocity.
 - Unfinished work returns to planning for dependency, estimate and priority review.
 - Sprint reviews and retrospectives will be recorded in the repository.
@@ -1302,7 +1306,7 @@ The monitoring setup will be versioned alongside the application configuration.
 | Activity UML diagram | diagrams.net / Draw.io | Produces an editable `.drawio` source file that can be versioned in `docs/` |
 | Documentation | Markdown | Keeps requirements, decisions, sprint notes and instructions readable in the repository |
 
-The GitHub Project will be linked to the repository and include board and table views. Its custom fields are Status (Todo, In Progress, In review, Done), Story points (number), Epic (single select: E1 to E6), Sprint (two-week iteration) and Item type (story, task, defect). The activity diagram for scheduling an appointment and recording the consultation is stored at `docs/activity-appointment.drawio`, with a PNG export beside the editable source:
+The GitHub Project will be linked to the repository and include board and table views. Its custom fields are Status (Backlog, Ready, In Progress, In Review, Done), Story points (number), Priority (single select: P0 to P3), Epic (single select: E1 to E6), Sprint (two-week iteration) and Item type (epic, story, task, defect). The full GitHub configuration is described in §10. The activity diagram for scheduling an appointment and recording the consultation is stored at `docs/activity-appointment.drawio`, with a PNG export beside the editable source:
 
 ![Activity diagram: schedule an appointment and record the consultation](docs/activity-appointment.png)
 
@@ -1313,3 +1317,153 @@ The application will use a single FastAPI service with server-rendered pages and
 This structure keeps application development manageable while supporting the main project objectives: automated testing, containerisation, delivery, monitoring and traceability.
 
 External paid services are not required by the planned architecture.
+
+## 10. Project management on GitHub
+
+### 10.1 GitHub Project
+
+The backlog from §4 and §6 is tracked in the GitHub Project **Hospital DevOps**, linked to this repository:
+<https://github.com/users/ceciliagalvaoo/projects/3>.
+
+Every epic, user story and task is a GitHub Issue in this repository, assigned to the project owner. Backlog identifiers (E1, US-01, T-01.1) are kept at the start of every issue title and are different from GitHub issue numbers (#1, #3, #5). The project currently contains 6 epics, 26 user stories (including the three optional ones) and 127 tasks.
+
+### 10.2 Labels and hierarchy
+
+Each issue carries exactly one level label:
+
+| Label | Level | Title format | Example |
+| --- | --- | --- | --- |
+| `epic` | Epic | `E<n> — <name>` | #1 E1 — Authentication and access |
+| `user-story` | User story | `US-XX — <name>` | #3 US-01 — Login and role-based access |
+| `task` | Task | `T-XX.Y — <short description>` | #5 T-01.1 — Create staff account model and migration |
+
+- Test tasks are tagged in the title with `[TEST][auto]` (formal automated test) or `[TEST][manual]` (manual test case), for example #136 T-22.5 — [TEST][auto] Container startup, health and database smoke check. Searching issues for `[TEST]` lists all planned testing work.
+- The additional label `optional` marks the optional stories US-19 to US-21.
+- The hierarchy uses native sub-issues: **Epic → User story → Task**. Tasks are never attached directly to an epic. The *Parent issue* and *Sub-issues progress* columns show the tree and the progress of each story.
+- New issues are created from the templates in `.github/ISSUE_TEMPLATE/` (`user-story.md` and `task.md`).
+
+### 10.3 Project fields
+
+| Field | Type | Epics | User stories | Tasks |
+| --- | --- | --- | --- | --- |
+| Story points | Number | Empty | Estimate from §7.4 | Empty (stories are estimated, not tasks) |
+| Priority | Single select: P0 — Critical, P1 — High, P2 — Medium, P3 — Low | Empty | See rule below | Inherited from the parent story |
+| Sprint | Iteration, two weeks | Empty (epics span several sprints) | Sprint from §8.2 | Inherited from the parent story |
+| Epic | Single select: E1 to E6 | Own epic | Parent epic | Epic of the parent story |
+| Item type | Single select: epic, story, task, defect | epic | story | task |
+
+Priority describes how soon a story is needed, independently of its size:
+
+- **P0 — Critical:** Sprint 1 foundation that every other story depends on (US-22, US-01, US-23, US-24).
+- **P1 — High:** required stories that are never deferred or are not in the deferral list of §8.1 (US-02 to US-10, US-12, US-16, US-17, US-25, US-26).
+- **P2 — Medium:** required stories that are deferred first if velocity is insufficient (US-11, US-13, US-14, US-15, US-18).
+- **P3 — Low:** optional stories (US-19, US-20, US-21).
+
+The optional stories US-19 to US-21 are intentionally left **without a sprint**. They stay in the backlog, outside the 102-point baseline, and are not artificially placed in one of the four sprints (§8.7).
+
+The Sprint iterations are Sprint 1 (16 Oct 2026), Sprint 2 (30 Oct), Sprint 3 (13 Nov) and Sprint 4 (27 Nov), each lasting 14 days. The per-sprint sums in the *Sprint plan* view were cross-checked against §8.2 and match: Sprint 1 = 26, Sprint 2 = 23, Sprint 3 = 24, Sprint 4 = 29 (102 required points), plus 6 optional points with no sprint.
+
+### 10.4 Status workflow and WIP limits
+
+| Status | Meaning | Column limit |
+| --- | --- | --- |
+| Backlog | Not yet planned into the current sprint, or still blocked | None |
+| Ready | In the current sprint and not blocked | None |
+| In Progress | A linked branch exists for it | 2 |
+| In Review | A pull request is open | 2 |
+| Done | Merged, and the Definition of Done is ticked | None |
+
+The limits are lower than the course suggestion because this is an individual project. GitHub shows a warning but does not enforce them, so they are respected by convention. Blocked items are never moved to Ready.
+
+### 10.5 Views
+
+| View | Layout | Configuration | Question it answers |
+| --- | --- | --- | --- |
+| Backlog | Table | All items, with Parent issue, Sub-issues progress, Story points, Priority, Epic, Item type and Sprint | Is every item in the tree, with its fields? |
+| Backlog by priority | Table | Filter `label:user-story`, sorted by Priority; shows Story points, Priority, Sprint and Epic | What matters most, regardless of when? |
+| Sprint plan | Table | Filter `label:user-story`, grouped by Sprint, with the Story points sum per group | Is each sprint deliverable, and does it match §8.2? |
+| Kanban – Sprint | Board | Columns by Status, filter `sprint:@current`; cards show Story points, Priority, assignees and labels | What is happening in the current sprint? |
+
+Only user stories are counted in the planning views, so task rows do not duplicate the story-point sums. The Kanban board stays empty until the current date falls inside a Sprint iteration; before that, the *Backlog* view is used.
+
+### 10.6 Automation
+
+The project workflows are:
+
+- **Auto-add to project:** new open issues from `hospital-devops` (`is:issue is:open`) are added automatically.
+- **Item added to project** → Status `Backlog`.
+- **Item closed** → Status `Done`.
+- **Pull request merged** → Status `Done`.
+
+Ready, In Progress and In Review are moved by hand. Closing a duplicate issue as *not planned* is not treated as completed work.
+
+### 10.7 Branch naming convention
+
+```text
+<issue-number>-<task-id>-<short-description>
+```
+
+- The issue number comes first so that automation can parse it.
+- The task identifier is written in lower case with dots replaced by hyphens (`T-22.1` → `t-22-1`).
+- One branch per task (or per small user story), always created from an up-to-date `main`.
+- Changes are never committed directly to `main`.
+
+Examples using real issues:
+
+```text
+132-t-22-1-fastapi-health-endpoint     # #132 T-22.1 — Create FastAPI application structure and health endpoint
+133-t-22-2-dockerfile-non-root-user    # #133 T-22.2 — Create Dockerfile with a non-root runtime user
+75-t-04-2-booking-conflict-validator   # #75  T-04.2 — Implement availability and booking-conflict validator
+```
+
+**1. Create the branch linked to the issue.** Open the issue, find **Development** in the right sidebar, click **Create a branch**, set the name according to the convention and choose `main` as the source. The terminal alternative creates and links the branch in one step:
+
+```bash
+gh issue develop 132 --name 132-t-22-1-fastapi-health-endpoint --base main --checkout
+gh issue develop --list 132   # lists the branches linked to issue #132
+```
+
+A branch created only with `git checkout -b` and pushed manually is **not** linked to the issue.
+
+**2. Fetch the branch and switch to it locally.**
+
+```bash
+git fetch origin
+git switch 132-t-22-1-fastapi-health-endpoint   # tracks origin/132-t-22-1-fastapi-health-endpoint
+```
+
+**3. Reference the issue in commits**, so that each commit appears on the issue timeline:
+
+```bash
+git add .
+git commit -m "Create FastAPI application structure and health endpoint (#132)"
+git push
+```
+
+**4. Open a pull request into `main`.** The description references the work item and uses a closing keyword once the implementation satisfies the task's *Done when* conditions:
+
+```text
+Closes #132
+```
+
+Merging the pull request closes the issue automatically, and the project workflow moves it to Done. `Closes` is only used when the change completes the issue; partial work uses `Refs #132` instead.
+
+### 10.8 Dependencies
+
+The "Blocked by" relationships from §6 are registered natively through **Relationships → Mark as blocked by**, at both story and task level, including the cross-story task dependencies stated explicitly in §6 (for example, #5 T-01.1 is blocked by T-22.4). Issue descriptions repeat them as `#N` references. Parent/child relationships are not registered as dependencies.
+
+Useful filters, both in the project and in the repository Issues tab:
+
+```text
+is:blocked
+is:blocking
+blocked-by:131
+blocking:131
+```
+
+From the terminal:
+
+```bash
+gh issue view 133 --json blockedBy,blocking
+gh issue edit 133 --add-blocked-by 132
+```
