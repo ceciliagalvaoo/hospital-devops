@@ -1468,3 +1468,31 @@ From the terminal:
 gh issue view 133 --json blockedBy,blocking
 gh issue edit 133 --add-blocked-by 132
 ```
+
+## 11. Running locally
+
+The application requires Python 3.12 or later. Commands are run from the repository root.
+
+**Install** the application and test dependencies in a virtual environment:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1      # Linux/macOS: source .venv/bin/activate
+pip install -r requirements-dev.txt
+```
+
+`requirements.txt` holds the runtime dependencies; `requirements-dev.txt` adds the test tools.
+
+**Run** the application:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The health endpoint is available at <http://127.0.0.1:8000/health> and returns `{"status": "ok"}`. The interactive API documentation is at <http://127.0.0.1:8000/docs>.
+
+**Test** the application:
+
+```bash
+pytest
+```
