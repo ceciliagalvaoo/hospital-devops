@@ -1,4 +1,4 @@
-# Merge practice
+# Merge practice — base version
 
 This file demonstrates a fast-forward merge.
 
