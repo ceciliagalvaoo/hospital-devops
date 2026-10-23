@@ -18,3 +18,5 @@ git diff --staged shows changes prepared for the next commit.
 git restore --staged removes changes from staging without deleting the files.
 
 Merge practice is recorded in docs/merge-practice.md.
+
+Stash temporarily stores unfinished work.
