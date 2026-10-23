@@ -1,0 +1,52 @@
+﻿*   849318c (HEAD -> lab4/final-documentation, tag: v0.1.0, origin/main, origin/HEAD, main) Merge pull request #165 from ceciliagalvaoo/132-t-22-1-fastapi-health-endpoint
+|\  
+| * f90a70d (origin/132-t-22-1-fastapi-health-endpoint, 132-t-22-1-fastapi-health-endpoint) test: add health endpoint test and local run instructions (#132)
+| * fb4118e feat: add health endpoint (#132)
+| *   e24f751 Merge README convention fix into task branch (#132)
+| |\  
+| |/  
+|/|   
+* |   67f6627 Merge pull request #164 from ceciliagalvaoo/lab4/fix-readme-commit-example
+|\ \  
+| * | a80f2d6 (origin/lab4/fix-readme-commit-example, lab4/fix-readme-commit-example) docs: align README commit example with convention (#162)
+|/ /  
+| * 6353c7e feat: add minimal FastAPI application structure (#132)
+| *   aebc07a Merge main into FastAPI task branch (#132)
+| |\  
+| |/  
+|/|   
+* |   1108191 Merge pull request #163 from ceciliagalvaoo/lab4/stash-practice
+|\ \  
+| * \   60dd1d0 (origin/lab4/stash-practice, lab4/stash-practice) docs: resolve collaboration conflict preserving both versions (#162)
+| |\ \  
+| | * | aac1216 docs: add remote collaboration example (#162)
+| * | | ac079cf docs: add alternative collaboration example (#162)
+| |/ /  
+| * |   3fc608c Merge Git status reminder (#162)
+| |\ \  
+| | * | e078dbc (lab4/small-fix) docs: add Git status reminder (#162)
+| * | | 469d508 docs: record stash practice (#162)
+| |/ /  
+| * |   3c57e25 (lab4/merge-base) docs: resolve practice title conflict (#162)
+| |\ \  
+| | * | e8fffae (lab4/conflict-demo) docs: change practice title on feature branch (#162)
+| * | | d73964d docs: change practice title on base branch (#162)
+| |/ /  
+| * |   83508b3 Merge Git workflow examples (#162)
+| |\ \  
+| | * | fadf05d (lab4/merge-feature) docs: explain merge commits (#162)
+| * | | 9d92711 docs: reference merge practice (#162)
+| |/ /  
+| * | 6b0bdba (lab4/fast-forward) docs: add fast-forward merge example (#162)
+| * | 7e50ca7 (lab4/git-workflow) docs: document commit and staging conventions (#162)
+| * | 22ef365 chore: add Python gitignore
+| * | f438246 docs: add Git workflow practice document
+|/ /  
+* | e9f9495 docs: add epic and defect issue templates and disable blank issues
+| * 5b48615 Start T-22.1 FastAPI application structure (#132)
+|/  
+* 8d0e5a3 docs: add issue templates, project link and GitHub workflow conventions
+* 15e1ee8 docs: expand project planning and add activity diagram
+* 2f21d72 docs: complete requirements, RBAC, product backlog and sprint plan
+* 5a3b12b Initialize README.md with project structure
+* 8ef1b60 Initial commit
