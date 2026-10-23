@@ -1436,8 +1436,8 @@ git switch 132-t-22-1-fastapi-health-endpoint   # tracks origin/132-t-22-1-fasta
 **3. Reference the issue in commits**, so that each commit appears on the issue timeline:
 
 ```bash
-git add .
-git commit -m "Create FastAPI application structure and health endpoint (#132)"
+git add requirements.txt app/__init__.py app/main.py app/routes/__init__.py app/routes/health.py
+git commit -m "feat: create FastAPI application structure and health endpoint (#132)"
 git push
 ```
 
