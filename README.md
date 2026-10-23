@@ -1340,7 +1340,8 @@ Each issue carries exactly one level label:
 - Test tasks are tagged in the title with `[TEST][auto]` (formal automated test) or `[TEST][manual]` (manual test case), for example #136 T-22.5 — [TEST][auto] Container startup, health and database smoke check. Searching issues for `[TEST]` lists all planned testing work.
 - The additional label `optional` marks the optional stories US-19 to US-21.
 - The hierarchy uses native sub-issues: **Epic → User story → Task**. Tasks are never attached directly to an epic. The *Parent issue* and *Sub-issues progress* columns show the tree and the progress of each story.
-- New issues are created from the templates in `.github/ISSUE_TEMPLATE/` (`user-story.md` and `task.md`).
+- New issues are created from the templates in `.github/ISSUE_TEMPLATE/`: `epic.md`, `user-story.md`, `task.md` and `defect.md`. `config.yml` disables blank issues, so every new issue follows one of these templates.
+- Defects found during testing are task-level issues: they carry the `task` level label plus the `defect` label, are titled `T-XX.Y — [DEFECT] <description>`, are added as sub-issues of the affected user story and use Item type = defect. They receive no Story points.
 
 ### 10.3 Project fields
 
