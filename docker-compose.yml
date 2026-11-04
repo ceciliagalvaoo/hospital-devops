@@ -34,5 +34,24 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  # Isolated database for integration tests; started only with --profile test.
+  # Synthetic credentials, data kept in memory and discarded when the container stops.
+  test-db:
+    image: postgres:17-alpine
+    profiles: ["test"]
+    environment:
+      POSTGRES_DB: hospital_test
+      POSTGRES_USER: hospital_test
+      POSTGRES_PASSWORD: hospital_test
+    ports:
+      - "127.0.0.1:${TEST_DB_PORT:-5433}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hospital_test -d hospital_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
 volumes:
   db-data:
