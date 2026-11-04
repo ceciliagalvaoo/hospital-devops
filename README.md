@@ -1569,3 +1569,11 @@ docker compose run --rm migrate alembic history            # list all revisions
 Revision `0001` is an empty baseline that starts the migration history; revision `0002` creates the `staff_accounts` table. Models live in `app/models/` and are registered in `app/models/__init__.py`, which `migrations/env.py` imports. Constraint names follow the naming convention in `app/db.py`, so every migration refers to predictable names. New migrations are created with `alembic revision --autogenerate -m "<description>"` and must be reviewed before they are committed; an integration test fails when the models and the migrations differ.
 
 **Staff accounts** have a unique login, one of the roles `receptionist`, `doctor` or `administrator` (enforced by a database check constraint) and an active flag. Passwords are stored only as bcrypt hashes with a cost factor of 12 (NFR-03 requires at least 10). bcrypt uses at most 72 bytes of a password, so longer passwords are rejected instead of being silently truncated.
+
+**Seed development accounts** for the three roles after the stack is running:
+
+```bash
+docker compose run --rm app python -m app.seed
+```
+
+The command creates the active accounts `dev.receptionist`, `dev.doctor` and `dev.administrator`, all with the password from `SEED_PASSWORD` in `.env`. Running it again leaves existing accounts and their passwords unchanged. It is development-only: it refuses to run unless `APP_ENV=development` (Compose defaults to `production` when the setting is missing) and refuses to run without `SEED_PASSWORD`. If your `.env` was created before these settings existed, add `APP_ENV` and `SEED_PASSWORD` from `.env.example`.
