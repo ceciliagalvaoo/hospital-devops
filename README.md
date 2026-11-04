@@ -1576,4 +1576,20 @@ Revision `0001` is an empty baseline that starts the migration history; revision
 docker compose run --rm app python -m app.seed
 ```
 
-The command creates the active accounts `dev.receptionist`, `dev.doctor` and `dev.administrator`, all with the password from `SEED_PASSWORD` in `.env`. Running it again leaves existing accounts and their passwords unchanged. It is development-only: it refuses to run unless `APP_ENV=development` (Compose defaults to `production` when the setting is missing) and refuses to run without `SEED_PASSWORD`. If your `.env` was created before these settings existed, add `APP_ENV` and `SEED_PASSWORD` from `.env.example`.
+The command creates the active accounts `dev.receptionist`, `dev.doctor` and `dev.administrator`, all with the password from `SEED_PASSWORD` in `.env`. Running it again leaves existing accounts and their passwords unchanged. It is development-only: it refuses to run unless `APP_ENV=development` (Compose defaults to `production` when the setting is missing) and refuses to run without `SEED_PASSWORD`. If your `.env` was created before these settings existed, add `APP_ENV`, `SEED_PASSWORD` and `SESSION_COOKIE_SECURE` from `.env.example`.
+
+**Log in and out** through the authentication endpoints:
+
+| Endpoint | Behaviour |
+| --- | --- |
+| `POST /auth/login` | Form fields `login` and `password`. Valid credentials of an active account return the login and role and set the session cookie. Wrong passwords, unknown logins and inactive accounts receive HTTP 401 with the same message. |
+| `POST /auth/logout` | Deletes the session and clears the cookie (HTTP 204). |
+| `GET /auth/me` | Returns the logged-in account, or HTTP 401 without a valid session. |
+
+```bash
+curl -c cookies.txt -d login=dev.doctor -d password=change-me-dev http://127.0.0.1:8000/auth/login
+curl -b cookies.txt http://127.0.0.1:8000/auth/me
+curl -b cookies.txt -X POST http://127.0.0.1:8000/auth/logout
+```
+
+Sessions are stored server-side in the `staff_sessions` table, so logout and account deactivation take effect immediately. The cookie `hospital_session` holds a random token; the database keeps only its SHA-256 hash. The cookie is `HttpOnly` and `SameSite=Lax`, expires after eight hours and is marked `Secure` when `SESSION_COOKIE_SECURE=true`, which must be set whenever the application is served over HTTPS. Each login issues a new token and replaces the browser's previous session. Expired sessions and sessions of deactivated accounts are rejected and deleted.
