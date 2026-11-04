@@ -14,6 +14,8 @@ RUN groupadd --system --gid 10001 app \
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+COPY alembic.ini .
+COPY migrations ./migrations
 COPY app ./app
 
 USER 10001:10001
