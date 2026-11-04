@@ -1505,3 +1505,12 @@ docker run --rm -p 8000:8000 hospital-devops
 ```
 
 The image is based on `python:3.13-slim`, installs only the runtime dependencies from `requirements.txt` and runs the application as the unprivileged user `app` (UID 10001). The health endpoint is available at the same address as above.
+
+**Run with PostgreSQL** using Docker Compose:
+
+```powershell
+Copy-Item .env.example .env       # Linux/macOS: cp .env.example .env
+docker compose up --build
+```
+
+Compose starts PostgreSQL 17 and the application. The application waits until the database health check passes and receives the connection settings through `DATABASE_URL`. Settings are read from `.env`, which is ignored by Git; Compose stops with an error if a required setting is missing. Database data is kept in the named volume `db-data`, so it survives `docker compose down`. To also remove the data, run `docker compose down -v`.
