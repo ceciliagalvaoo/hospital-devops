@@ -1,9 +1,10 @@
 import os
+from collections.abc import Iterator
 from functools import lru_cache
 
 from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Session
 
 # Deterministic constraint names keep later migrations reviewable and reversible.
 NAMING_CONVENTION = {
@@ -35,6 +36,12 @@ def get_engine() -> Engine:
         pool_pre_ping=True,
         connect_args={"connect_timeout": 3},
     )
+
+
+def get_session() -> Iterator[Session]:
+    """FastAPI dependency that provides a database session per request."""
+    with Session(get_engine()) as session:
+        yield session
 
 
 def database_is_available() -> bool:
