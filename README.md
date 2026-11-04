@@ -1507,6 +1507,22 @@ docker compose --profile test stop test-db
 
 The `test-db` service runs only with the `test` profile, uses fixed synthetic credentials, listens on `127.0.0.1:5433` (`TEST_DB_PORT` in `.env`) and keeps its data in memory. Tests connect through `TEST_DATABASE_URL`, which defaults to that service. The fixtures in `tests/conftest.py` refuse a database whose name does not contain `test`, apply all migrations at the start of the session and roll them back at the end, and run each test in a transaction that is rolled back afterwards. Use the `db_session` fixture for database access in tests. When the test database is not running, integration tests are skipped locally with instructions; in CI (`CI=true`) they fail instead.
 
+**Lint and format** the code with Ruff, configured in `ruff.toml`:
+
+```bash
+ruff check .            # lint
+ruff format .           # format the code
+ruff format --check .   # check formatting without changing files
+```
+
+**Measure coverage** of the application code:
+
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+**Continuous integration** runs the GitHub Actions workflow `.github/workflows/ci.yml` on every pull request targeting `main` and on every push to `main`. The `Lint` job runs `ruff check` and `ruff format --check`. The `Tests` job runs the unit and integration tests with coverage against a PostgreSQL service container, with `CI=true` so that an unreachable test database fails the run. The coverage table is added to the job summary and `coverage.xml` is uploaded as the `coverage-report` artifact.
+
 The container smoke tests are marked `smoke` and excluded by default. They require Docker with Docker Compose:
 
 ```bash

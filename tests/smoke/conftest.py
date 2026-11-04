@@ -48,7 +48,12 @@ class ComposeStack:
 
     def up(self, check: bool = True) -> subprocess.CompletedProcess[str]:
         return self.compose(
-            "up", "--detach", "--build", "--wait", "--wait-timeout", str(STARTUP_TIMEOUT_SECONDS),
+            "up",
+            "--detach",
+            "--build",
+            "--wait",
+            "--wait-timeout",
+            str(STARTUP_TIMEOUT_SECONDS),
             check=check,
         )
 
