@@ -1497,6 +1497,14 @@ The health endpoint is available at <http://127.0.0.1:8000/health>. It returns H
 pytest
 ```
 
+`pytest` runs the unit and endpoint tests, which need no database or Docker. The container smoke tests are marked `smoke` and excluded by default. They require Docker with Docker Compose:
+
+```bash
+pytest -m smoke
+```
+
+Each smoke run starts an isolated Compose project with settings based on `.env.example` and a free host port. It checks that PostgreSQL becomes healthy, migrations are applied to the latest revision before the application starts, `/health` reports the database status (HTTP 200, and HTTP 503 with the database stopped), the application does not run as root and the application does not start when the migration step fails. The project, its volume and its images are removed afterwards; a local `.env` is not used.
+
 **Run in a container** (requires Docker):
 
 ```bash
