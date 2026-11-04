@@ -1,0 +1,30 @@
+# Version control and CI configuration
+.git
+.github
+
+# Python environments and cache
+.venv/
+venv/
+**/__pycache__/
+**/*.py[cod]
+
+# Test and code-quality artifacts
+tests/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+test-results/
+playwright-report/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Documentation and build files not needed at runtime
+docs/
+*.md
+Dockerfile
+.dockerignore

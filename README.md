@@ -1496,3 +1496,12 @@ The health endpoint is available at <http://127.0.0.1:8000/health> and returns `
 ```bash
 pytest
 ```
+
+**Run in a container** (requires Docker):
+
+```bash
+docker build -t hospital-devops .
+docker run --rm -p 8000:8000 hospital-devops
+```
+
+The image is based on `python:3.13-slim`, installs only the runtime dependencies from `requirements.txt` and runs the application as the unprivileged user `app` (UID 10001). The health endpoint is available at the same address as above.
