@@ -1,6 +1,6 @@
 # Docker build
 
-This document describes how the application image is built, run and tagged. It is the reference for the manual build (Lab 6, Task 8) and for the automated pipeline that publishes the image (US-24).
+This document describes how the application image is built, run and tagged. It is the reference for the manual build (Lab 6, Task 8) and for the automated pipeline that publishes the image (US-24). The report for Lab 6, Tasks 0–7, is in [docker-build-lab.md](docker-build-lab.md).
 
 ## Commands
 
