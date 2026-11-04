@@ -3,6 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine, pool
 
+import app.models  # noqa: F401  (registers the models on Base.metadata)
 from app.db import Base, get_database_url
 
 config = context.config
@@ -10,7 +11,6 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Import model modules here as they are created so that autogenerate detects them.
 target_metadata = Base.metadata
 
 

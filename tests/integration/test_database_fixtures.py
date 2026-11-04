@@ -1,17 +1,20 @@
 """Integration tests for the isolated test-database fixtures."""
 
 import pytest
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from fastapi.testclient import TestClient
 from sqlalchemy import inspect, text
 
 from app.main import app
-from tests.database import ensure_test_database
+from tests.database import ROOT, ensure_test_database
 
 
 def test_migrations_are_applied_to_test_database(db_session):
     revision = db_session.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
+    head = ScriptDirectory.from_config(Config(str(ROOT / "alembic.ini"))).get_current_head()
 
-    assert revision == "0001"
+    assert revision == head
 
 
 def test_session_uses_dedicated_test_database(db_session):
