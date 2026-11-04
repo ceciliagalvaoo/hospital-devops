@@ -94,3 +94,25 @@ jobs:
           name: coverage-report
           path: coverage.xml
           if-no-files-found: warn
+
+  container:
+    name: Container
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Build application image
+        run: docker build --tag "hospital-devops:ci-${{ github.sha }}" .
+
+      - name: Run container smoke tests
+        run: pytest -m smoke -v

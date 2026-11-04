@@ -1521,9 +1521,9 @@ ruff format --check .   # check formatting without changing files
 pytest --cov=app --cov-report=term-missing
 ```
 
-**Continuous integration** runs the GitHub Actions workflow `.github/workflows/ci.yml` on every pull request targeting `main` and on every push to `main`. The `Lint` job runs `ruff check` and `ruff format --check`. The `Tests` job runs the unit and integration tests with coverage against a PostgreSQL service container, with `CI=true` so that an unreachable test database fails the run. The coverage table is added to the job summary and `coverage.xml` is uploaded as the `coverage-report` artifact.
+**Continuous integration** runs the GitHub Actions workflow `.github/workflows/ci.yml` on every pull request targeting `main` and on every push to `main`. The `Lint` job runs `ruff check` and `ruff format --check`. The `Tests` job runs the unit and integration tests with coverage against a PostgreSQL service container, with `CI=true` so that an unreachable test database fails the run. The coverage table is added to the job summary and `coverage.xml` is uploaded as the `coverage-report` artifact. The `Container` job builds the application image from the Dockerfile and runs the container smoke tests (`pytest -m smoke`); a failed build or smoke test fails the job. The image is built but not published.
 
-The CI smoke tests in `tests/ci/` check the workflow contract that the pull-request checks rely on: the triggers, the `Lint` and `Tests` job names, `CI=true` in the `Tests` job and the same Python version as the application image. To verify that a failing test turns the `Tests` check red, run the workflow manually with a deliberate failure, either from **Actions → CI → Run workflow** with *force_failure* selected, or with the GitHub CLI:
+The CI smoke tests in `tests/ci/` check the workflow contract that the pull-request checks rely on: the triggers, the `Lint`, `Tests` and `Container` job names, `CI=true` in the `Tests` job and the same Python version as the application image. To verify that a failing test turns the `Tests` check red, run the workflow manually with a deliberate failure, either from **Actions → CI → Run workflow** with *force_failure* selected, or with the GitHub CLI:
 
 ```bash
 gh workflow run CI --ref main -f force_failure=true

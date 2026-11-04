@@ -10,7 +10,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_FILE = ROOT / ".github" / "workflows" / "ci.yml"
 DOCKERFILE = ROOT / "Dockerfile"
-REQUIRED_CHECKS = {"Lint", "Tests"}
+REQUIRED_CHECKS = {"Lint", "Tests", "Container"}
 
 
 @pytest.fixture(scope="module")
