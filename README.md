@@ -1497,7 +1497,17 @@ The health endpoint is available at <http://127.0.0.1:8000/health>. It returns H
 pytest
 ```
 
-`pytest` runs the unit and endpoint tests, which need no database or Docker. The container smoke tests are marked `smoke` and excluded by default. They require Docker with Docker Compose:
+`pytest` runs the unit, endpoint and integration tests. Integration tests use an isolated PostgreSQL test database, separate from the development database. Start it before running the tests:
+
+```bash
+docker compose --profile test up -d --wait test-db
+pytest
+docker compose --profile test stop test-db
+```
+
+The `test-db` service runs only with the `test` profile, uses fixed synthetic credentials, listens on `127.0.0.1:5433` (`TEST_DB_PORT` in `.env`) and keeps its data in memory. Tests connect through `TEST_DATABASE_URL`, which defaults to that service. The fixtures in `tests/conftest.py` refuse a database whose name does not contain `test`, apply all migrations at the start of the session and roll them back at the end, and run each test in a transaction that is rolled back afterwards. Use the `db_session` fixture for database access in tests. When the test database is not running, integration tests are skipped locally with instructions; in CI (`CI=true`) they fail instead.
+
+The container smoke tests are marked `smoke` and excluded by default. They require Docker with Docker Compose:
 
 ```bash
 pytest -m smoke
