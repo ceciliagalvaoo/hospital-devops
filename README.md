@@ -1566,4 +1566,6 @@ docker compose run --rm migrate alembic downgrade -1       # roll back the lates
 docker compose run --rm migrate alembic history            # list all revisions
 ```
 
-Revision `0001` is an empty baseline that starts the migration history. New migrations are created with `alembic revision --autogenerate -m "<description>"` after the model modules are imported in `migrations/env.py`, and must be reviewed before they are committed.
+Revision `0001` is an empty baseline that starts the migration history; revision `0002` creates the `staff_accounts` table. Models live in `app/models/` and are registered in `app/models/__init__.py`, which `migrations/env.py` imports. Constraint names follow the naming convention in `app/db.py`, so every migration refers to predictable names. New migrations are created with `alembic revision --autogenerate -m "<description>"` and must be reviewed before they are committed; an integration test fails when the models and the migrations differ.
+
+**Staff accounts** have a unique login, one of the roles `receptionist`, `doctor` or `administrator` (enforced by a database check constraint) and an active flag. Passwords are stored only as bcrypt hashes with a cost factor of 12 (NFR-03 requires at least 10). bcrypt uses at most 72 bytes of a password, so longer passwords are rejected instead of being silently truncated.
