@@ -1489,7 +1489,7 @@ pip install -r requirements-dev.txt
 uvicorn app.main:app --reload
 ```
 
-The health endpoint is available at <http://127.0.0.1:8000/health> and returns `{"status": "ok"}`. The interactive API documentation is at <http://127.0.0.1:8000/docs>.
+The health endpoint is available at <http://127.0.0.1:8000/health>. It returns HTTP 200 and `{"status": "ok", "database": "ok"}` when the PostgreSQL database configured in `DATABASE_URL` is reachable, and HTTP 503 and `{"status": "error", "database": "unavailable"}` otherwise. Without a database, run the complete stack with Docker Compose as described below. The interactive API documentation is at <http://127.0.0.1:8000/docs>.
 
 **Test** the application:
 
@@ -1504,7 +1504,7 @@ docker build -t hospital-devops .
 docker run --rm -p 8000:8000 hospital-devops
 ```
 
-The image is based on `python:3.13-slim`, installs only the runtime dependencies from `requirements.txt` and runs the application as the unprivileged user `app` (UID 10001). The health endpoint is available at the same address as above.
+The image is based on `python:3.13-slim`, installs only the runtime dependencies from `requirements.txt` and runs the application as the unprivileged user `app` (UID 10001). The health endpoint is available at the same address as above; without a database it reports HTTP 503.
 
 **Run with PostgreSQL** using Docker Compose:
 
@@ -1513,4 +1513,15 @@ Copy-Item .env.example .env       # Linux/macOS: cp .env.example .env
 docker compose up --build
 ```
 
-Compose starts PostgreSQL 17 and the application. The application waits until the database health check passes and receives the connection settings through `DATABASE_URL`. Settings are read from `.env`, which is ignored by Git; Compose stops with an error if a required setting is missing. Database data is kept in the named volume `db-data`, so it survives `docker compose down`. To also remove the data, run `docker compose down -v`.
+Compose starts PostgreSQL 17, applies pending database migrations through the one-off `migrate` service and then starts the application. Migrations run only after the database health check passes, and the application starts only after the migrations finish successfully. Both services receive the connection settings through `DATABASE_URL`. Settings are read from `.env`, which is ignored by Git; Compose stops with an error if a required setting is missing. Database data is kept in the named volume `db-data`, so it survives `docker compose down`. To also remove the data, run `docker compose down -v`.
+
+**Database migrations** are managed with Alembic. The scripts are in `migrations/versions/`, and `alembic.ini` reads the database URL from `DATABASE_URL`. Run the commands through the `migrate` service so that they use the Compose database:
+
+```bash
+docker compose run --rm migrate alembic current            # show the applied revision
+docker compose run --rm migrate alembic upgrade head       # apply all pending migrations
+docker compose run --rm migrate alembic downgrade -1       # roll back the latest migration
+docker compose run --rm migrate alembic history            # list all revisions
+```
+
+Revision `0001` is an empty baseline that starts the migration history. New migrations are created with `alembic revision --autogenerate -m "<description>"` after the model modules are imported in `migrations/env.py`, and must be reviewed before they are committed.
