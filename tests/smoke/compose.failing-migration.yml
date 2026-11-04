@@ -1,0 +1,4 @@
+# Compose override used by the smoke tests to simulate a failed migration step.
+services:
+  migrate:
+    command: ["sh", "-c", "echo 'Simulated migration failure' >&2; exit 1"]
