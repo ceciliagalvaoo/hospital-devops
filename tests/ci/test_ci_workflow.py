@@ -44,7 +44,9 @@ def test_tests_job_fails_instead_of_skipping_without_database(workflow):
 
 
 def test_workflow_uses_application_image_python_version(workflow):
-    image = re.search(r"^FROM python:(\d+\.\d+)", DOCKERFILE.read_text(encoding="utf-8"), re.M)
+    image = re.search(
+        r"^ARG PYTHON_IMAGE=python:(\d+\.\d+)\.\d+", DOCKERFILE.read_text(encoding="utf-8"), re.M
+    )
 
     assert image is not None
     assert workflow["env"]["PYTHON_VERSION"] == image.group(1)

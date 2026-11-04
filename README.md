@@ -1546,7 +1546,7 @@ docker build -t hospital-devops .
 docker run --rm -p 8000:8000 hospital-devops
 ```
 
-The image is based on `python:3.13-slim`, installs only the runtime dependencies from `requirements.txt` and runs the application as the unprivileged user `app` (UID 10001). The health endpoint is available at the same address as above; without a database it reports HTTP 503.
+The image is a multi-stage build based on `python:3.13.18-slim`: a build stage installs the runtime dependencies from `requirements.txt` into a virtual environment, and the runtime stage contains only that environment and the application files, runs as the unprivileged user `app` (UID 10001) and carries the `org.opencontainers.image.*` labels. The health endpoint is available at the same address as above; without a database it reports HTTP 503. Build arguments, tagging, the stage structure, measurements and the choice of base image are documented in [docs/docker-build.md](docs/docker-build.md).
 
 **Run with PostgreSQL** using Docker Compose:
 
