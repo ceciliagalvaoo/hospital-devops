@@ -1,30 +1,12 @@
-# Version control and CI configuration
-.git
-.github
+# Allowlist: exclude everything, then include only what the image needs.
+# New files in the repository (secrets, tests, tooling) stay out of the build context by default.
+*
 
-# Python environments and cache
-.venv/
-venv/
+!app/
+!migrations/
+!alembic.ini
+!requirements.txt
+
+# Never send Python caches, even from included folders.
 **/__pycache__/
 **/*.py[cod]
-
-# Test and code-quality artifacts
-tests/
-.pytest_cache/
-.ruff_cache/
-.coverage
-.coverage.*
-htmlcov/
-test-results/
-playwright-report/
-
-# Secrets and local configuration
-.env
-.env.*
-!.env.example
-
-# Documentation and build files not needed at runtime
-docs/
-*.md
-Dockerfile
-.dockerignore
