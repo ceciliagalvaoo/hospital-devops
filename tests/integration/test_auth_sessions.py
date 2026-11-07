@@ -10,6 +10,7 @@ from app.auth import SESSION_COOKIE_NAME, SESSION_LIFETIME, hash_token
 from app.db import get_session
 from app.main import app
 from app.models import Role, StaffAccount, StaffSession
+from tests.csrf import csrf_headers
 
 PASSWORD = "synthetic-password"
 INVALID = {"detail": "Invalid login or password."}
@@ -33,7 +34,13 @@ def account(db_session):
 
 
 def log_in(client, login="synthetic.doctor", password=PASSWORD):
-    return client.post("/auth/login", data={"login": login, "password": password})
+    return client.post(
+        "/auth/login", data={"login": login, "password": password}, headers=csrf_headers(client)
+    )
+
+
+def log_out(client):
+    return client.post("/auth/logout", headers=csrf_headers(client))
 
 
 def session_count(db_session) -> int:
@@ -61,7 +68,9 @@ def test_session_cookie_is_http_only_lax_and_limited_in_lifetime(client, account
 
 def test_session_cookie_is_secure_when_configured(client, account, monkeypatch):
     monkeypatch.setenv("SESSION_COOKIE_SECURE", "true")
+    client.base_url = "https://testserver"  # browsers send Secure cookies only over HTTPS
 
+    assert "Secure" in client.get("/auth/csrf").headers["set-cookie"]
     assert "Secure" in log_in(client).headers["set-cookie"]
 
 
@@ -120,7 +129,7 @@ def test_logout_deletes_session_and_clears_cookie(client, account, db_session):
     log_in(client)
     token = client.cookies[SESSION_COOKIE_NAME]
 
-    response = client.post("/auth/logout")
+    response = log_out(client)
 
     assert response.status_code == 204
     assert f'{SESSION_COOKIE_NAME}=""' in response.headers["set-cookie"]
@@ -130,7 +139,7 @@ def test_logout_deletes_session_and_clears_cookie(client, account, db_session):
 
 
 def test_logout_without_session_succeeds(client):
-    assert client.post("/auth/logout").status_code == 204
+    assert log_out(client).status_code == 204
 
 
 def test_expired_session_is_rejected_and_removed(client, account, db_session):
