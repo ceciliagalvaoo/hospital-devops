@@ -1593,3 +1593,31 @@ curl -b cookies.txt -X POST http://127.0.0.1:8000/auth/logout
 ```
 
 Sessions are stored server-side in the `staff_sessions` table, so logout and account deactivation take effect immediately. The cookie `hospital_session` holds a random token; the database keeps only its SHA-256 hash. The cookie is `HttpOnly` and `SameSite=Lax`, expires after eight hours and is marked `Secure` when `SESSION_COOKIE_SECURE=true`, which must be set whenever the application is served over HTTPS. Each login issues a new token and replaces the browser's previous session. Expired sessions and sessions of deactivated accounts are rejected and deleted.
+
+**Protect a route** by declaring its access requirement with the dependencies in `app/access.py`, never by checking the session inside the route (§3.4):
+
+```python
+from typing import Annotated
+
+from fastapi import Depends
+
+from app.access import CurrentAccount, require_roles
+from app.models import Role, StaffAccount
+
+AdministratorAccount = Annotated[StaffAccount, Depends(require_roles(Role.ADMINISTRATOR))]
+
+
+@router.get("/profile")
+def profile(account: CurrentAccount): ...  # any logged-in role
+
+
+@router.get("/accounts")
+def list_accounts(account: AdministratorAccount): ...  # administrators only
+```
+
+| Request | Response |
+| --- | --- |
+| No session cookie, an unknown or expired session, or a deactivated account | HTTP 401 `Not authenticated.` |
+| Valid session, but the account has none of the roles passed to `require_roles` | HTTP 403 `Not permitted for this role.` |
+
+Authentication is always checked first, so a request without a valid session receives HTTP 401 even on a role-restricted route. `require_roles` accepts several roles (for example `require_roles(Role.RECEPTIONIST, Role.ADMINISTRATOR)`); the allowed roles of each route follow the RBAC matrix in §3.2. Checks that depend on the record, such as a doctor's own appointments or patients, belong to the route of the story that introduces the record.
