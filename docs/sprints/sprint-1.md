@@ -112,7 +112,9 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-24: #148, a CI job `Verify image` pulls the published image anonymously and checks health, login page, user and labels; run locally against `sha-6b0482d`: 7 of 7 passed.
   - US-24: #148 verified on `main`: `Verify image` pulled `sha-4fcbce3` anonymously and passed 7 of 7 checks.
   - US-24: #149, manual checks: pull requests and manual runs do not publish, and the image of `4fcbce3` matches its commit (digest, revision label, 29 application files, 8 dependencies); 6 of 6 pass. All US-24 tasks are done.
-- **Next:** #193, documentation of the implemented architecture.
+  - The four Sprint 1 stories meet their acceptance criteria and Definition of Done and are *In Review* until the Sprint Review.
+  - #193, `docs/architecture.md`: overview, modules, data model, request flow, delivery, tests, configuration and design decisions, with four Mermaid diagrams.
+- **Next:** #186, Sprint Review, Retrospective and release `v0.2.0` on 2026-11-14.
 - **Blockers:** none.
 
 ## 3. Increment
