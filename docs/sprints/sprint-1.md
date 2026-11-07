@@ -110,7 +110,9 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-24: #147, published images carry `sha-<commit>` tags and version and revision labels; release tags `vX.Y.Z` also publish `X.Y.Z`, `X.Y` and `latest` (decision of 2026-11-07).
   - US-24: #147 verified on `main`: `main` and `sha-6b0482d` published with the version and revision labels.
   - US-24: #148, a CI job `Verify image` pulls the published image anonymously and checks health, login page, user and labels; run locally against `sha-6b0482d`: 7 of 7 passed.
-- **Next:** #149, manual checks that pull requests do not publish and that the published SHA matches its commit.
+  - US-24: #148 verified on `main`: `Verify image` pulled `sha-4fcbce3` anonymously and passed 7 of 7 checks.
+  - US-24: #149, manual checks: pull requests and manual runs do not publish, and the image of `4fcbce3` matches its commit (digest, revision label, 29 application files, 8 dependencies); 6 of 6 pass. All US-24 tasks are done.
+- **Next:** #193, documentation of the implemented architecture.
 - **Blockers:** none.
 
 ## 3. Increment
