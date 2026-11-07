@@ -1,25 +1,20 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Response, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Form, HTTPException, Response, status
 
+from app.access import CurrentAccount, DbSession, SessionToken
 from app.auth import (
     SESSION_COOKIE_NAME,
     SESSION_LIFETIME,
     authenticate,
     create_session,
     delete_session,
-    get_session_account,
     session_cookie_secure,
 )
-from app.db import get_session
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 INVALID_CREDENTIALS = "Invalid login or password."
-
-DbSession = Annotated[Session, Depends(get_session)]
-SessionToken = Annotated[str | None, Cookie(alias=SESSION_COOKIE_NAME)]
 
 
 def _account_response(account) -> dict[str, str]:
@@ -68,8 +63,5 @@ def logout(response: Response, db: DbSession, session_token: SessionToken = None
 
 
 @router.get("/me")
-def me(db: DbSession, session_token: SessionToken = None) -> dict[str, str]:
-    account = get_session_account(db, session_token)
-    if account is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated.")
+def me(account: CurrentAccount) -> dict[str, str]:
     return _account_response(account)
