@@ -5,6 +5,8 @@ on:
     branches: [main]
   push:
     branches: [main]
+    # Release tags (one per sprint) also publish version tags of the image.
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       force_failure:
@@ -176,8 +178,11 @@ jobs:
 
   publish:
     name: Publish
-    # Pushes to main only (a merged pull request), after all required checks passed.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Pushes to main (a merged pull request) and release tags only, after all required checks
+    # passed on the same commit.
+    if: >-
+      github.event_name == 'push'
+      && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     needs: [lint, test, e2e, container]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -186,6 +191,17 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          # Full history and tags, for git describe and the release-tag check.
+          fetch-depth: 0
+
+      - name: Check that a release tag points to a commit on main
+        if: startsWith(github.ref, 'refs/tags/')
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - name: Compute version and image tags
+        id: meta
+        run: python scripts/image_metadata.py
 
       - name: Log in to GitHub Container Registry
         run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
@@ -193,18 +209,35 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build application image
-        run: docker build --tag "$IMAGE_NAME:main" .
+        run: >-
+          docker build
+          --build-arg APP_VERSION="$VERSION"
+          --build-arg VCS_REF="$GITHUB_SHA"
+          --tag "$IMAGE_NAME:build" .
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
 
-      - name: Push image to GHCR
-        run: docker push "$IMAGE_NAME:main"
+      - name: Tag and push image to GHCR
+        run: |
+          for tag in $TAGS; do
+            docker tag "$IMAGE_NAME:build" "$IMAGE_NAME:$tag"
+            docker push "$IMAGE_NAME:$tag"
+          done
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
 
       - name: Record the published image
         run: |
+          first_tag="${TAGS%% *}"
           {
             echo "### Published image"
             echo
-            echo "- Image: \`$IMAGE_NAME:main\`"
-            echo "- Digest: \`$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE_NAME:main")\`"
+            echo "- Image: \`$IMAGE_NAME\`"
+            echo "- Tags: \`$TAGS\`"
+            echo "- Version: \`$VERSION\`"
             echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Digest: \`$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE_NAME:$first_tag")\`"
           } >> "$GITHUB_STEP_SUMMARY"
-
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          VERSION: ${{ steps.meta.outputs.version }}
