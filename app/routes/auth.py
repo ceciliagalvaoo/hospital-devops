@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Form, HTTPException, Response, status
+from fastapi import APIRouter, Form, HTTPException, Request, Response, status
 
 from app.access import CurrentAccount, DbSession, SessionToken
 from app.auth import (
@@ -11,6 +11,7 @@ from app.auth import (
     delete_session,
     session_cookie_secure,
 )
+from app.csrf import issue_token
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -65,3 +66,9 @@ def logout(response: Response, db: DbSession, session_token: SessionToken = None
 @router.get("/me")
 def me(account: CurrentAccount) -> dict[str, str]:
     return _account_response(account)
+
+
+@router.get("/csrf")
+def csrf(request: Request, response: Response) -> dict[str, str]:
+    """Return the CSRF token for the next state-changing request of this browser."""
+    return {"csrf_token": issue_token(request, response)}
