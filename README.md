@@ -1521,7 +1521,7 @@ ruff format --check .   # check formatting without changing files
 pytest --cov=app --cov-report=term-missing
 ```
 
-**Test maps** record which automated tests verify each acceptance criterion of a story, in [docs/testing/](docs/testing/): [US-01](docs/testing/us-01-automated-tests.md).
+**Test records** are kept in [docs/testing/](docs/testing/): test maps of which automated tests verify each acceptance criterion of a story, and dated manual checklists. US-01: [automated tests](docs/testing/us-01-automated-tests.md), [manual checks](docs/testing/us-01-manual-checks.md).
 
 **Continuous integration** runs the GitHub Actions workflow `.github/workflows/ci.yml` on every pull request targeting `main` and on every push to `main`. The `Lint` job runs `ruff check` and `ruff format --check`. The `Tests` job runs the unit and integration tests with coverage against a PostgreSQL service container, with `CI=true` so that an unreachable test database fails the run. The coverage table is added to the job summary and `coverage.xml` is uploaded as the `coverage-report` artifact. The `Container` job builds the application image from the Dockerfile and runs the container smoke tests (`pytest -m smoke`); a failed build or smoke test fails the job. The image is built but not published.
 

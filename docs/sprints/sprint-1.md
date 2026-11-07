@@ -99,7 +99,8 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-01: #10, the remaining authentication test cases and the US-01 test map (`docs/testing/us-01-automated-tests.md`).
   - US-01: #11, Playwright end-to-end tests for login, navigation and logout per role (`pytest -m e2e`).
   - Preparing #12, a browser pre-check found defect #202: the administrator's home page scrolled horizontally on a 320 px screen. Fixed with wrapping of long words and covered by end-to-end tests at 320 px.
-- **Next:** #12, manual checks of login messages, keyboard navigation and small screens.
+  - US-01: #12, manual checks of login messages, keyboard navigation and small screens in Chrome 156 on Windows 11: 19 of 20 pass. The expired-form page is titled "Access denied" (A8), recorded as defect #204.
+- **Next:** #204, page titles that match the reason of the error.
 - **Blockers:** none.
 
 ## 3. Increment
