@@ -53,7 +53,7 @@ Files are staged explicitly (`git add <file> ...`, not `git add .`) and the stag
 6. **Test.** Run the automated tests (`python -m pytest -v`) and check the issue's *Done when* conditions.
 7. **Push.** `git push -u origin <branch>`.
 8. **Pull request.** Open it into `main` with `Closes #<issue>` in the description (`Refs #<issue>` for partial work) and move the issue to *In Review*.
-9. **Review and merge.** Review the diff, leave a review comment and merge with a merge commit.
+9. **Review and merge.** Review the diff, leave a review comment and, once the required checks pass, merge with a merge commit.
 10. **Check.** Confirm that the issue closed itself and that the card moved to *Done*.
 11. **Sync.** `git switch main`, `git pull`, `git branch -d <branch>`, `git fetch --prune`, and delete the merged remote branch.
 12. **Release.** Create an annotated tag, push it explicitly and publish the GitHub Release.
@@ -116,6 +116,7 @@ Verified: `main` is protected by the repository ruleset **Protect main** (active
 - a pull request is required before merging, with 0 required approvals;
 - force pushes (non-fast-forward updates) are blocked;
 - deletion of `main` is blocked.
+- since 2026-11-07 (#141), the CI checks `Lint`, `Tests`, `E2E` and `Container` must pass, with the branch up to date with `main`, and only merge commits are allowed (see docs/branching-strategy.md §3 and §7).
 
 This is an individual project, so there is no second reviewer. Each pull request is reviewed by its author: the full diff is checked and a comment records what was verified before merging. Verified: review comments on #163 and #165. Pull requests are merged with a merge commit to preserve the branch history.
 

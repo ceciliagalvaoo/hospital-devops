@@ -23,6 +23,8 @@ The project uses **feature branching**:
 
 The choice of strategy depends on the project's needs, not only on team size: Git Flow or trunk-based development can work for teams and for individuals. For this project, at this stage, feature branching gives review and traceability with the least overhead. The decision will be reviewed if the test suite and CI mature enough to support shorter-lived branches.
 
+The table records the situation when the strategy was chosen (2026-10-31). Since then, Sprint 1 added the CI workflow (#139, #144, #140) and made its jobs required checks (#141, §7); the decision is reviewed in the Sprint 1 retrospective (#186).
+
 ## 2. Branch types and naming rules
 
 | Branch | Lifetime | Created from | Merged into | Naming rule | Example |
@@ -74,10 +76,16 @@ git fetch --prune
    - **diff:** the full diff on GitHub has been read;
    - **issue criteria:** each *Done when* condition of the issue is met, or the open ones are listed;
    - **validation:** which checks were run and their result.
-3. **Merge method: Create a merge commit.** This preserves the branch commits and shows in the graph where each task started and was integrated, as in PRs #163, #164, #165 and #166. Squash and rebase merges are not used for normal work.
-4. **Validation before merging.** Relevant tests must pass before the merge:
-   - **Current (local) validation.** No CI workflow exists yet. The author runs `python -m pytest -v` locally whenever application code, tests or dependencies change, and checks the issue's *Done when* conditions. For documentation-only changes, the author checks the rendered Markdown, links and file names instead.
-   - **Future CI checks.** When US-23 is implemented (T-23.2 and T-23.4), GitHub Actions will run Ruff, pytest with coverage and the container build on every pull request, and these checks will become **required status checks** on `main`. From then on, a pull request cannot be merged while a required check fails. Local validation remains a good practice before pushing.
+3. **Merge method: Create a merge commit.** This preserves the branch commits and shows in the graph where each task started and was integrated, as in PRs #163, #164, #165 and #166. The ruleset allows only merge commits (§7), so squash and rebase merges are not available.
+4. **Validation before merging.** A pull request can only be merged when the four required checks of the CI workflow (`.github/workflows/ci.yml`) have passed on its latest commit:
+   - `Lint`: Ruff lint and format check;
+   - `Tests`: unit and integration tests with coverage against PostgreSQL;
+   - `E2E`: Playwright end-to-end tests in headless Chromium;
+   - `Container`: image build and container smoke tests.
+
+   The branch must also be up to date with `main`, so the checks ran on the code that will be merged. If `main` moved after the pull request was opened, GitHub shows **Update branch**, which merges `main` into the branch (§5) and runs the checks again. A failed check blocks the merge until it is fixed by a new commit on the branch. The checks run for documentation-only changes too.
+
+   Running the relevant tests locally before pushing remains good practice (README §11), and the issue's *Done when* conditions are still checked in the self-review.
 5. **Protected `main`.** `main` is protected by a ruleset (see §7).
 
 ## 4. Release rules
@@ -154,12 +162,12 @@ M       pull-request merge commit ("Create a merge commit")
 
 ## 7. Protection of `main`
 
-Checked read-only via the GitHub API on 2026-10-31: `main` is protected by the repository ruleset **Protect main** (enforcement *active*, target `~DEFAULT_BRANCH`, no bypass actors). Its rules:
+`main` is protected by the repository ruleset **Protect main** (enforcement *active*, target `~DEFAULT_BRANCH`, no bypass actors). The required checks and the merge method were configured on 2026-11-07 (#141) and checked through the GitHub API (`gh api repos/ceciliagalvaoo/hospital-devops/rulesets/25722097`). Its rules:
 
 | Rule | Configured | Matches this strategy |
 | --- | --- | --- |
 | Require a pull request before merging | Yes, 0 required approvals | Yes: PRs are mandatory; zero approvals fit individual work with documented self-review. |
 | Block force pushes (non-fast-forward) | Yes | Yes |
 | Restrict deletions | Yes | Yes |
-| Allowed merge methods | Merge, squash and rebase | Compatible: merge commit is the documented choice; the others are allowed but not used. |
-| Required status checks | None | Expected for now: no CI exists yet; checks will be added with US-23 (T-23.4). |
+| Allowed merge methods | Merge commit only | Yes: matches merge rule 3. |
+| Required status checks | `Lint`, `Tests`, `E2E` and `Container` from GitHub Actions; branch must be up to date with `main` | Yes: merge rule 4. Failed or missing checks block the merge (NFR-06). |
