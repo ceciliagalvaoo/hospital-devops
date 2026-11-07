@@ -95,6 +95,60 @@ jobs:
           path: coverage.xml
           if-no-files-found: warn
 
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: hospital_test
+          POSTGRES_USER: hospital_test
+          POSTGRES_PASSWORD: hospital_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hospital_test -d hospital_test"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      CI: "true"
+      CI_FORCE_FAILURE: ${{ inputs.force_failure && 'true' || 'false' }}
+      TEST_DATABASE_URL: postgresql+psycopg://hospital_test:hospital_test@127.0.0.1:5432/hospital_test
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Install Chromium for Playwright
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: >-
+          pytest -m e2e -v
+          --screenshot only-on-failure
+          --video retain-on-failure
+          --tracing retain-on-failure
+          --output test-results
+
+      - name: Upload Playwright results of failed tests
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 14
+          if-no-files-found: warn
+
   container:
     name: Container
     runs-on: ubuntu-latest
