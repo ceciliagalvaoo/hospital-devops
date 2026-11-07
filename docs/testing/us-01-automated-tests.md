@@ -1,6 +1,6 @@
 # US-01 automated tests
 
-This document maps each acceptance criterion of US-01 (README §4.3) and each case of T-01.6 (#10) to the automated tests that verify it. All tests use synthetic accounts (`synthetic.*` and `e2e.*` logins and passwords), never real data. The unit and integration tests run in the `Tests` job of CI on every pull request; the browser end-to-end tests (T-01.7, #11) run with `pytest -m e2e` and are added to CI by T-23.3 (#140).
+This document maps each acceptance criterion of US-01 (README §4.3) and each case of T-01.6 (#10) to the automated tests that verify it. All tests use synthetic accounts (`synthetic.*` and `e2e.*` logins and passwords), never real data. The unit and integration tests run in the `Tests` job of CI on every pull request; the browser end-to-end tests (T-01.7, #11) run with `pytest -m e2e` in the `E2E` job (#140).
 
 Run them locally against the test database (README §11):
 

@@ -101,7 +101,9 @@ Each entry records the completed work, the next action and any blockers. Entries
   - Preparing #12, a browser pre-check found defect #202: the administrator's home page scrolled horizontally on a 320 px screen. Fixed with wrapping of long words and covered by end-to-end tests at 320 px.
   - US-01: #12, manual checks of login messages, keyboard navigation and small screens in Chrome 156 on Windows 11: 19 of 20 pass. The expired-form page is titled "Access denied" (A8), recorded as defect #204.
   - US-01: #204, error pages are titled by their reason ("Form expired", "Request refused", "Access denied", "Page not found"); covered by tests that reproduced the defect.
-- **Next:** #140, Playwright in CI with failure artifacts.
+  - US-01: all tasks done; the story waits for the end-to-end tests in CI and GHCR publication.
+  - US-23: #140, a CI job `E2E` runs the browser tests and keeps screenshots, videos and traces of failures.
+- **Next:** #141, required checks and pull-request workflow documentation.
 - **Blockers:** none.
 
 ## 3. Increment

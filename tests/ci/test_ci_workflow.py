@@ -10,7 +10,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_FILE = ROOT / ".github" / "workflows" / "ci.yml"
 DOCKERFILE = ROOT / "Dockerfile"
-REQUIRED_CHECKS = {"Lint", "Tests", "Container"}
+REQUIRED_CHECKS = {"Lint", "Tests", "E2E", "Container"}
 
 
 @pytest.fixture(scope="module")
@@ -41,6 +41,21 @@ def test_tests_job_fails_instead_of_skipping_without_database(workflow):
 
     assert tests_job["env"]["CI"] == "true"
     assert "TEST_DATABASE_URL" in tests_job["env"]
+
+
+def test_e2e_job_runs_browser_tests_and_keeps_artifacts_of_failures(workflow):
+    e2e_job = workflow["jobs"]["e2e"]
+    steps = e2e_job["steps"]
+    commands = " ".join(step.get("run", "") for step in steps)
+    upload = next(step for step in steps if "upload-artifact" in step.get("uses", ""))
+
+    assert e2e_job["env"]["CI"] == "true"
+    assert "TEST_DATABASE_URL" in e2e_job["env"]
+    assert "playwright install" in commands and "chromium" in commands
+    assert "pytest -m e2e" in commands
+    assert "--tracing retain-on-failure" in commands
+    assert upload["if"] == "failure()"
+    assert upload["with"]["name"] == "playwright-results"
 
 
 def test_workflow_uses_application_image_python_version(workflow):
