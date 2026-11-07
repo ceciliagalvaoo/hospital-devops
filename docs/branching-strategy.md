@@ -96,7 +96,7 @@ git fetch --prune
   - **PATCH:** compatible bug fixes only.
   - While the version is `0.y.z`, the application is still in initial development and may change; `1.0.0` is reserved for the first version considered stable for its intended use.
 - **Where tags are created.** Only **annotated tags** (`git tag -a`) on **validated commits of `main`**, normally the merge commit of the pull request that completes an increment, typically at the end of a sprint. Tags are never created on task branches.
-- **Who creates them.** The project owner creates the tags, pushes them explicitly (`git push origin vX.Y.Z`, because `git push` does not send tags) and publishes the GitHub Release.
+- **Who creates them.** The project owner creates the tags, pushes them explicitly (`git push origin vX.Y.Z`, because `git push` does not send tags) and publishes the GitHub Release. Pushing the tag also runs the CI workflow, which publishes the image tags `X.Y.Z`, `X.Y` and `latest` after the checks pass ([docker-build.md](docker-build.md#versioning-and-image-tags)). There is one release per sprint.
 - **Existing release.** `v0.1.0` is an annotated tag on `849318c` (merge of PR #165), with a published GitHub Release: <https://github.com/ceciliagalvaoo/hospital-devops/releases/tag/v0.1.0>.
 - **Published release tags are immutable.** A tag that belongs to a published release is never moved, deleted or recreated; a correction is released as a new version. Temporary tags created for exercises are not releases and may be removed: in Lab 4, the lightweight tag `v0.1.0-rc1` was deleted locally (`git tag -d v0.1.0-rc1`) and on the remote (`git push origin --delete v0.1.0-rc1`).
 

@@ -106,7 +106,9 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-23: #141, the ruleset of `main` requires the checks `Lint`, `Tests`, `E2E` and `Container` with an up-to-date branch, and allows only merge commits.
   - US-23: #143, a throwaway pull request (#209, closed without merging) showed that running or failed required checks and an outdated branch block the merge, also for the administrator: 6 of 6 checks pass. All US-23 tasks are done.
   - US-24: #146, a CI job `Publish` pushes the image to GHCR after the required checks pass on `main`.
-- **Next:** #147, commit-SHA image tags, version labels and the versioning scheme.
+  - US-24: #146 verified on `main`: the first image was published to GHCR (public package, anonymous pull works).
+  - US-24: #147, published images carry `sha-<commit>` tags and version and revision labels; release tags `vX.Y.Z` also publish `X.Y.Z`, `X.Y` and `latest` (decision of 2026-11-07).
+- **Next:** #148, automated pull and health check of the published image.
 - **Blockers:** none.
 
 ## 3. Increment

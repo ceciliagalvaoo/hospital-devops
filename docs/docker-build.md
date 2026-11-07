@@ -27,7 +27,7 @@ Run only the application container. Without a database, `GET /health` reports HT
 docker run --rm -p 8000:8000 hospital-devops:0.1.0
 ```
 
-**Tag** the same image with further names. All tags point to the same image ID:
+**Tag** the same image with further names locally. All tags point to the same image ID. Published images are tagged by CI (see [Versioning and image tags](#versioning-and-image-tags)):
 
 ```bash
 docker tag hospital-devops:0.1.0 hospital-devops:0.1
@@ -50,6 +50,32 @@ Build only the first stage, for example to debug the dependency installation:
 ```bash
 docker build --target build -t hospital-devops:build .
 ```
+
+## Versioning and image tags
+
+Published images are built and pushed by the `Publish` job of the CI workflow (`.github/workflows/ci.yml`) to `ghcr.io/ceciliagalvaoo/hospital-devops`. The job runs only after `Lint`, `Tests`, `E2E` and `Container` passed on the same commit, and `scripts/image_metadata.py` computes the version and the tags:
+
+| Event | Image tags | `org.opencontainers.image.version` |
+| --- | --- | --- |
+| Push to `main` (a merged pull request) | `main`, `sha-<commit>` | `git describe` of the commit, for example `0.1.0-97-g437b1b4`: 97 commits after release `v0.1.0`, at commit `437b1b4` |
+| Push of a release tag `vX.Y.Z` | `X.Y.Z`, `X.Y`, `latest`, `sha-<commit>` | `X.Y.Z` |
+
+`<commit>` is the first seven characters of the commit SHA, and `org.opencontainers.image.revision` always holds the full SHA, so every published image can be traced to its source commit.
+
+- **Immutable tags:** `sha-<commit>` and `X.Y.Z` always refer to the same image. A release tag is never moved (`docs/branching-strategy.md` §4), so `X.Y.Z` is published once.
+- **Moving tags:** `main` follows the latest merged commit; `X.Y` follows the latest patch release of a minor version; `latest` follows the latest release, never an unreleased commit of `main`.
+- **Releases** follow semantic versioning (`docs/branching-strategy.md` §4); there is one release per sprint (`v0.2.0` at the end of Sprint 1). A release tag must have the form `vMAJOR.MINOR.PATCH` and point to a commit on `main`; otherwise the `Publish` job fails and nothing is published. The `Tag and push` step pushes the tags one after the other, so a failure part-way leaves the earlier tags published.
+- **Pull requests and manual runs** never publish; the `Publish` job is skipped for them, and it is the only job with permission to write packages.
+
+To run a specific build, use its immutable tag or its digest, which the run summary of the `Publish` job records:
+
+```bash
+docker pull ghcr.io/ceciliagalvaoo/hospital-devops:sha-437b1b4
+docker image inspect ghcr.io/ceciliagalvaoo/hospital-devops:sha-437b1b4 \
+  --format '{{index .Config.Labels "org.opencontainers.image.version"}} {{index .Config.Labels "org.opencontainers.image.revision"}}'
+```
+
+The package is public and linked to this repository through the `org.opencontainers.image.source` label: <https://github.com/ceciliagalvaoo/hospital-devops/pkgs/container/hospital-devops>.
 
 ## Dockerfile structure
 
