@@ -97,7 +97,8 @@ Each entry records the completed work, the next action and any blockers. Entries
   - This planning record (#185).
   - US-01: #13, CSRF protection for every state-changing request.
   - US-01: #9, login pages and role-based navigation, with placeholder area pages for the Sprint 1 review.
-- **Next:** #10, automated authentication, session, CSRF and role-access tests.
+  - US-01: #10, the remaining authentication test cases and the US-01 test map (`docs/testing/us-01-automated-tests.md`).
+- **Next:** #11, Playwright tests for login, navigation and logout per role.
 - **Blockers:** none.
 
 ## 3. Increment
