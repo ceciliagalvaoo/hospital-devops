@@ -8,6 +8,7 @@ from functools import lru_cache
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
+from starlette.responses import Response
 
 from app.models import StaffAccount, StaffSession
 from app.security import hash_password, verify_password
@@ -73,3 +74,34 @@ def get_session_account(db: Session, token: str | None) -> StaffAccount | None:
         db.commit()
         return None
     return session.account
+
+
+def start_session(db: Session, account: StaffAccount, previous_token: str | None) -> str:
+    """Replace the browser's previous session with a new one and return its token."""
+    if previous_token:
+        delete_session(db, previous_token)
+    token = create_session(db, account)
+    db.commit()
+    return token
+
+
+def set_session_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        SESSION_COOKIE_NAME,
+        token,
+        max_age=int(SESSION_LIFETIME.total_seconds()),
+        path="/",
+        secure=session_cookie_secure(),
+        httponly=True,
+        samesite="lax",
+    )
+
+
+def clear_session_cookie(response: Response) -> None:
+    response.delete_cookie(
+        SESSION_COOKIE_NAME,
+        path="/",
+        secure=session_cookie_secure(),
+        httponly=True,
+        samesite="lax",
+    )

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Welcome, {{ account.login }}</h1>
+<p>You are logged in as <strong>{{ account.role.value }}</strong>. These are the areas available to your role:</p>
+<ul class="areas">
+  {% for area in navigation %}
+  <li class="card">
+    <h2><a href="{{ area.path }}">{{ area.title }}</a></h2>
+    <p>{{ area.description }}</p>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

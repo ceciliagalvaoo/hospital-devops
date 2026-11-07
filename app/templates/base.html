@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} · Hospital Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="/">Hospital Management</a>
+    {% if account %}
+    <nav aria-label="Main">
+      <ul class="nav-list">
+        <li><a href="/"{% if request.url.path == "/" %} aria-current="page"{% endif %}>Home</a></li>
+        {% for area in navigation %}
+        <li><a href="{{ area.path }}"{% if request.url.path == area.path %} aria-current="page"{% endif %}>{{ area.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+    <div class="account">
+      <span data-testid="current-account">{{ account.login }} ({{ account.role.value }})</span>
+      <form method="post" action="/logout">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+  <main id="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

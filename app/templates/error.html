@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error {{ status_code }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{% if status_code == 403 %}Access denied{% else %}Something went wrong{% endif %}</h1>
+  <p class="message error" role="alert">{{ message }}</p>
+  <p><a href="/">Back to the home page</a></p>
+</section>
+{% endblock %}
