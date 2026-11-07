@@ -44,22 +44,34 @@ def _binding(request: Request) -> str | None:
     return None
 
 
+def new_token(request: Request) -> tuple[str, str | None]:
+    """Return the CSRF token and, when the request has no binding cookie yet, a new
+    pre-session cookie value that the response must set with ``set_pre_session_cookie``."""
+    binding = _binding(request)
+    if binding is not None:
+        return _sign(binding), None
+    pre_session = secrets.token_urlsafe(32)
+    return _sign(f"pre-session:{pre_session}"), pre_session
+
+
+def set_pre_session_cookie(response: Response, value: str) -> None:
+    response.set_cookie(
+        CSRF_COOKIE_NAME,
+        value,
+        max_age=int(SESSION_LIFETIME.total_seconds()),
+        path="/",
+        secure=session_cookie_secure(),
+        httponly=True,
+        samesite="lax",
+    )
+
+
 def issue_token(request: Request, response: Response) -> str:
     """Return the CSRF token for this request, setting a pre-session cookie if needed."""
-    binding = _binding(request)
-    if binding is None:
-        pre_session = secrets.token_urlsafe(32)
-        response.set_cookie(
-            CSRF_COOKIE_NAME,
-            pre_session,
-            max_age=int(SESSION_LIFETIME.total_seconds()),
-            path="/",
-            secure=session_cookie_secure(),
-            httponly=True,
-            samesite="lax",
-        )
-        binding = f"pre-session:{pre_session}"
-    return _sign(binding)
+    token, pre_session = new_token(request)
+    if pre_session is not None:
+        set_pre_session_cookie(response, pre_session)
+    return token
 
 
 def _is_cross_origin(request: Request) -> bool:

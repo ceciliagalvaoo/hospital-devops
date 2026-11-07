@@ -13,7 +13,7 @@ role receive HTTP 403 (README §3.4).
 from collections.abc import Callable
 from typing import Annotated
 
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.auth import SESSION_COOKIE_NAME, get_session_account
@@ -27,11 +27,18 @@ DbSession = Annotated[Session, Depends(get_session)]
 SessionToken = Annotated[str | None, Cookie(alias=SESSION_COOKIE_NAME)]
 
 
-def current_account(db: DbSession, session_token: SessionToken = None) -> StaffAccount:
-    """Return the account of the valid session, or reject the request with HTTP 401."""
+def current_account(
+    request: Request, db: DbSession, session_token: SessionToken = None
+) -> StaffAccount:
+    """Return the account of the valid session, or reject the request with HTTP 401.
+
+    The account is also kept on ``request.state`` so that error pages can show the
+    navigation of the logged-in user.
+    """
     account = get_session_account(db, session_token)
     if account is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, NOT_AUTHENTICATED)
+    request.state.account = account
     return account
 
 

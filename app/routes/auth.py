@@ -4,12 +4,11 @@ from fastapi import APIRouter, Form, HTTPException, Request, Response, status
 
 from app.access import CurrentAccount, DbSession, SessionToken
 from app.auth import (
-    SESSION_COOKIE_NAME,
-    SESSION_LIFETIME,
     authenticate,
-    create_session,
+    clear_session_cookie,
     delete_session,
-    session_cookie_secure,
+    set_session_cookie,
+    start_session,
 )
 from app.csrf import issue_token
 
@@ -33,19 +32,7 @@ def login(
     account = authenticate(db, login, password)
     if account is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, INVALID_CREDENTIALS)
-    if session_token:
-        delete_session(db, session_token)
-    token = create_session(db, account)
-    db.commit()
-    response.set_cookie(
-        SESSION_COOKIE_NAME,
-        token,
-        max_age=int(SESSION_LIFETIME.total_seconds()),
-        path="/",
-        secure=session_cookie_secure(),
-        httponly=True,
-        samesite="lax",
-    )
+    set_session_cookie(response, start_session(db, account, session_token))
     return _account_response(account)
 
 
@@ -54,13 +41,7 @@ def logout(response: Response, db: DbSession, session_token: SessionToken = None
     if session_token:
         delete_session(db, session_token)
         db.commit()
-    response.delete_cookie(
-        SESSION_COOKIE_NAME,
-        path="/",
-        secure=session_cookie_secure(),
-        httponly=True,
-        samesite="lax",
-    )
+    clear_session_cookie(response)
 
 
 @router.get("/me")
