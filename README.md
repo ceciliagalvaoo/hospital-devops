@@ -1541,6 +1541,16 @@ pytest -m smoke
 
 Each smoke run starts an isolated Compose project with settings based on `.env.example` and a free host port. It checks that PostgreSQL becomes healthy, migrations are applied to the latest revision before the application starts, `/health` reports the database status (HTTP 200, and HTTP 503 with the database stopped), the application does not run as root and the application does not start when the migration step fails. The project, its volume and its images are removed afterwards; a local `.env` is not used.
 
+The browser end-to-end tests are marked `e2e` and excluded by default as well. They use Playwright for Python with a headless Chromium and need the test database; install the browser once, then run them:
+
+```bash
+python -m playwright install chromium   # once; on a fresh Linux machine add --with-deps
+pytest -m e2e
+pytest -m e2e --headed --slowmo 500     # watch the browser
+```
+
+A pytest fixture starts the application with Uvicorn on a free local port against the test database and creates one synthetic account per role (`e2e.receptionist`, `e2e.doctor`, `e2e.administrator`), which are deleted afterwards. For each role, the tests log in through the login page, check that the navigation shows exactly the areas of the role and that each opens, check that the other areas return "Access denied" with HTTP 403, log out and check that a protected page then shows the login page with HTTP 401. When end-to-end and integration tests are selected together, the end-to-end tests run last, because their accounts stay in the database for the whole run.
+
 **Run in a container** (requires Docker):
 
 ```bash
