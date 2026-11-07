@@ -17,10 +17,13 @@ permissions:
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Only pull-request runs are cancelled by newer ones; every run on main completes, so
+  # each merged commit is checked and published.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   PYTHON_VERSION: "3.13"
+  IMAGE_NAME: ghcr.io/ceciliagalvaoo/hospital-devops
 
 jobs:
   lint:
@@ -170,3 +173,38 @@ jobs:
 
       - name: Run container smoke tests
         run: pytest -m smoke -v
+
+  publish:
+    name: Publish
+    # Pushes to main only (a merged pull request), after all required checks passed.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, test, e2e, container]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Log in to GitHub Container Registry
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build application image
+        run: docker build --tag "$IMAGE_NAME:main" .
+
+      - name: Push image to GHCR
+        run: docker push "$IMAGE_NAME:main"
+
+      - name: Record the published image
+        run: |
+          {
+            echo "### Published image"
+            echo
+            echo "- Image: \`$IMAGE_NAME:main\`"
+            echo "- Digest: \`$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE_NAME:main")\`"
+            echo "- Commit: \`$GITHUB_SHA\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
