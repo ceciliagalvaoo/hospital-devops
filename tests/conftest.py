@@ -65,7 +65,10 @@ def app_uses_test_database(db_engine: Engine, monkeypatch):
 
 
 def pytest_collection_modifyitems(items):
-    """Mark every test that uses the test database as an integration test."""
+    """Mark every test that uses the test database as an integration test, and run the
+    end-to-end tests last: their accounts are committed for the whole session, so tests
+    that count rows must run before them when both are selected."""
     for item in items:
         if "db_engine" in getattr(item, "fixturenames", ()):
             item.add_marker(pytest.mark.integration)
+    items.sort(key=lambda item: item.get_closest_marker("e2e") is not None)
