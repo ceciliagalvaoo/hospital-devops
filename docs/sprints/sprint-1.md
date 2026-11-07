@@ -103,7 +103,8 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-01: #204, error pages are titled by their reason ("Form expired", "Request refused", "Access denied", "Page not found"); covered by tests that reproduced the defect.
   - US-01: all tasks done; the story waits for the end-to-end tests in CI and GHCR publication.
   - US-23: #140, a CI job `E2E` runs the browser tests and keeps screenshots, videos and traces of failures.
-- **Next:** #141, required checks and pull-request workflow documentation.
+  - US-23: #141, the ruleset of `main` requires the checks `Lint`, `Tests`, `E2E` and `Container` with an up-to-date branch, and allows only merge commits.
+- **Next:** #143, manual check that failed required checks block merging.
 - **Blockers:** none.
 
 ## 3. Increment
