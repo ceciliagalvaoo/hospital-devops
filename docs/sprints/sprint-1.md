@@ -93,12 +93,12 @@ Each entry records the completed work, the next action and any blockers. Entries
   - Created the ceremony tasks #185 to #192, DOC-02 (#193) and the release criteria.
   - Reviewed `docs/` against the plan: refinement notes on #141 and #147, and a review of the branching strategy added to the retrospective (#186).
   - US-01: #8 (PR #194).
-  - Lab 5: removed the outdated deferral note as #195 (PR #196).
   - This planning record (#185).
   - US-01: #13, CSRF protection for every state-changing request.
   - US-01: #9, login pages and role-based navigation, with placeholder area pages for the Sprint 1 review.
   - US-01: #10, the remaining authentication test cases and the US-01 test map (`docs/testing/us-01-automated-tests.md`).
   - US-01: #11, Playwright end-to-end tests for login, navigation and logout per role (`pytest -m e2e`).
+  - Preparing #12, a browser pre-check found defect #202: the administrator's home page scrolled horizontally on a 320 px screen. Fixed with wrapping of long words and covered by end-to-end tests at 320 px.
 - **Next:** #12, manual checks of login messages, keyboard navigation and small screens.
 - **Blockers:** none.
 

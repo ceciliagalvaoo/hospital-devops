@@ -25,6 +25,8 @@ body {
   line-height: 1.5;
   color: var(--text);
   background: var(--background);
+  /* Long words without break opportunities, such as logins, wrap instead of widening the page. */
+  overflow-wrap: anywhere;
 }
 
 a {

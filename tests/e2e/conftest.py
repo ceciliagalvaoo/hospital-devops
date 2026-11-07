@@ -57,6 +57,21 @@ def e2e_accounts(db_engine: Engine) -> dict[Role, E2EAccount]:
 
 
 @pytest.fixture(scope="session")
+def e2e_long_login_account(db_engine: Engine) -> E2EAccount:
+    """A synthetic administrator with the longest allowed login (64 characters)."""
+    account = E2EAccount("e2e." + "a" * 60, Role.ADMINISTRATOR)
+    with Session(db_engine) as session:
+        staff = StaffAccount(login=account.login, role=account.role)
+        staff.set_password(account.password)
+        session.add(staff)
+        session.commit()
+    yield account
+    with Session(db_engine) as session:
+        session.execute(delete(StaffAccount).where(StaffAccount.login == account.login))
+        session.commit()
+
+
+@pytest.fixture(scope="session")
 def live_server(db_engine: Engine, e2e_accounts) -> str:
     """Run the application with Uvicorn against the test database and return its URL."""
     previous = os.environ.get("DATABASE_URL")
