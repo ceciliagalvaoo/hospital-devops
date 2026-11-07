@@ -66,6 +66,7 @@ Published images are built and pushed by the `Publish` job of the CI workflow (`
 - **Moving tags:** `main` follows the latest merged commit; `X.Y` follows the latest patch release of a minor version; `latest` follows the latest release, never an unreleased commit of `main`.
 - **Releases** follow semantic versioning (`docs/branching-strategy.md` §4); there is one release per sprint (`v0.2.0` at the end of Sprint 1). A release tag must have the form `vMAJOR.MINOR.PATCH` and point to a commit on `main`; otherwise the `Publish` job fails and nothing is published. The `Tag and push` step pushes the tags one after the other, so a failure part-way leaves the earlier tags published.
 - **Pull requests and manual runs** never publish; the `Publish` job is skipped for them, and it is the only job with permission to write packages.
+- **Verification:** after each publication, the `Verify image` job pulls the `sha-<commit>` tag anonymously, starts it with PostgreSQL and checks `/health`, the login page, the non-root user and the `source`, `revision` and `version` labels (`pytest -m published`, README §11).
 
 To run a specific build, use its immutable tag or its digest, which the run summary of the `Publish` job records:
 

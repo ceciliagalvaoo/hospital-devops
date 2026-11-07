@@ -189,6 +189,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -241,3 +243,34 @@ jobs:
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           VERSION: ${{ steps.meta.outputs.version }}
+
+  verify-image:
+    name: Verify image
+    # Pulls the image that Publish pushed, without credentials, and starts it with PostgreSQL.
+    if: >-
+      github.event_name == 'push'
+      && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    needs: [publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_REVISION: ${{ github.sha }}
+      EXPECTED_VERSION: ${{ needs.publish.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Pull and check the published image
+        run: |
+          export PUBLISHED_IMAGE="$IMAGE_NAME:sha-${GITHUB_SHA::7}"
+          echo "Checking $PUBLISHED_IMAGE"
+          pytest -m published -v
+

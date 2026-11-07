@@ -1,0 +1,10 @@
+# Compose override used by the published-image checks: the migration step and the
+# application run the image named by PUBLISHED_IMAGE, pulled from the registry, instead of
+# an image built from the local Dockerfile.
+services:
+  migrate:
+    image: ${PUBLISHED_IMAGE:?set PUBLISHED_IMAGE to the published image to check}
+    pull_policy: always
+  app:
+    image: ${PUBLISHED_IMAGE:?set PUBLISHED_IMAGE to the published image to check}
+    pull_policy: always

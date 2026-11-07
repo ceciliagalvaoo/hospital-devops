@@ -108,7 +108,9 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-24: #146, a CI job `Publish` pushes the image to GHCR after the required checks pass on `main`.
   - US-24: #146 verified on `main`: the first image was published to GHCR (public package, anonymous pull works).
   - US-24: #147, published images carry `sha-<commit>` tags and version and revision labels; release tags `vX.Y.Z` also publish `X.Y.Z`, `X.Y` and `latest` (decision of 2026-11-07).
-- **Next:** #148, automated pull and health check of the published image.
+  - US-24: #147 verified on `main`: `main` and `sha-6b0482d` published with the version and revision labels.
+  - US-24: #148, a CI job `Verify image` pulls the published image anonymously and checks health, login page, user and labels; run locally against `sha-6b0482d`: 7 of 7 passed.
+- **Next:** #149, manual checks that pull requests do not publish and that the published SHA matches its commit.
 - **Blockers:** none.
 
 ## 3. Increment
