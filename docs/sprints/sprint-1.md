@@ -104,7 +104,8 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-01: all tasks done; the story waits for the end-to-end tests in CI and GHCR publication.
   - US-23: #140, a CI job `E2E` runs the browser tests and keeps screenshots, videos and traces of failures.
   - US-23: #141, the ruleset of `main` requires the checks `Lint`, `Tests`, `E2E` and `Container` with an up-to-date branch, and allows only merge commits.
-- **Next:** #143, manual check that failed required checks block merging.
+  - US-23: #143, a throwaway pull request (#209, closed without merging) showed that running or failed required checks and an outdated branch block the merge, also for the administrator: 6 of 6 checks pass. All US-23 tasks are done.
+- **Next:** #146, publication of the image to GHCR from `main`.
 - **Blockers:** none.
 
 ## 3. Increment
