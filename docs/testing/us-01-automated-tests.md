@@ -19,7 +19,7 @@ pytest -m e2e   # browser end-to-end tests
 | `tests/integration/test_auth_sessions.py` | 15 | `/auth` login, logout and server-side sessions |
 | `tests/integration/test_access.py` | 23 | reusable 401/403 dependencies |
 | `tests/integration/test_csrf.py` | 23 | CSRF protection |
-| `tests/integration/test_pages.py` | 39 | login pages, role-based navigation, browser errors |
+| `tests/integration/test_pages.py` | 44 | login pages, role-based navigation, browser errors |
 | `tests/integration/test_us01_authentication.py` | 19 | cases added by T-01.6 (#10) |
 | `tests/e2e/test_login_navigation.py` | 5 | browser end-to-end: login, navigation and logout per role (T-01.7, #11) |
 | `tests/e2e/test_small_screen.py` | 4 | every page fits a 320 px screen without horizontal scrolling, per role and with a 64-character login (defect #202) |
@@ -41,7 +41,7 @@ pytest -m e2e   # browser end-to-end tests
 | Invalid credentials | Same message and HTTP 401 for wrong passwords, unknown logins and empty fields (API and pages); `test_us01_authentication.py::test_every_login_attempt_runs_one_bcrypt_check`: unknown logins still run one bcrypt check, so response times do not reveal which logins exist |
 | Inactive accounts | Login refused (`test_auth_sessions.py`, `test_pages.py`); an existing session of a deactivated account is rejected and deleted (`test_auth_sessions.py::test_session_of_a_deactivated_account_is_rejected`, `test_access.py::test_deactivated_account_receives_401`) |
 | Sessions | Only a SHA-256 hash of the token is stored; `HttpOnly`, `SameSite=Lax`, `Max-Age` of eight hours and `Secure` when configured; a new token on every login; logout deletes the session; expired and unknown sessions rejected (`test_auth_sessions.py`); the stored expiry is eight hours (`test_us01_authentication.py::test_new_session_expires_after_eight_hours`) |
-| CSRF rejection | Missing, wrong, non-ASCII, pre-login and other-session tokens refused; cross-origin, `null` origin and cross-site fetches refused even with a valid token (`test_csrf.py`); every state-changing route of the application refuses requests without a token and accepts a valid one, and a new route that is not in the list fails the test (`test_us01_authentication.py::test_every_state_changing_route_*`); a page logout without a token keeps the session (`test_us01_authentication.py::test_page_logout_without_token_keeps_the_session`) |
+| CSRF rejection | Missing, wrong, non-ASCII, pre-login and other-session tokens refused; cross-origin, `null` origin and cross-site fetches refused even with a valid token (`test_csrf.py`); every state-changing route of the application refuses requests without a token and accepts a valid one, and a new route that is not in the list fails the test (`test_us01_authentication.py::test_every_state_changing_route_*`); a page logout without a token keeps the session (`test_us01_authentication.py::test_page_logout_without_token_keeps_the_session`); the browser error page is titled by its reason, such as "Form expired" (`test_pages.py::test_expired_form_page_is_titled_form_expired`, `::test_error_page_title_matches_the_reason`, defect #204) |
 | Allowed and denied role access | `test_access.py` (each role on routes for one and for several roles; 401 before 403); `test_pages.py::test_area_pages_follow_the_rbac_matrix` (15 area/role combinations) and `::test_navigation_shows_exactly_the_areas_of_the_role` |
 
 ## Tests fail when the behaviour breaks

@@ -85,3 +85,7 @@ Use the device emulation of the browser's developer tools (Chrome or Edge: F12, 
 - **A8 fails:** an expired form is reported on a page titled "Access denied", although the message correctly says that the form has expired. The behaviour is otherwise correct (HTTP 403, login works after reloading). Recorded as defect #204 (T-01.11) and fixed in its own pull request.
 - Before this run, a browser pre-check of the small-screen layout found defect #202 (horizontal scrolling of the administrator's home page at 320 px), which was fixed in `5603992`; C2 confirms the fix.
 - Messages for wrong passwords, unknown logins and inactive accounts are identical (A1 to A3), so they do not reveal whether a login exists.
+
+## Follow-up
+
+- 2026-11-07: defect #204 fixed. The error page title now states the reason ("Form expired", "Request refused", "Access denied", "Page not found"); the steps of A7 were repeated in headless Chromium against the fixed version and show "Form expired" with HTTP 403. The results above are kept as recorded on the run.

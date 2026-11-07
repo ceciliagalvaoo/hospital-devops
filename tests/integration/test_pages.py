@@ -232,3 +232,60 @@ def test_stylesheet_is_served(client):
 def test_pages_use_the_configured_database_session(app_uses_test_database):
     # No dependency override: the page goes through app.db.get_session.
     assert TestClient(app, headers=HTML).get("/").status_code == 401
+
+
+def page_heading(html: str) -> str:
+    match = re.search(r"<h1>(.*?)</h1>", html, re.S)
+    assert match, "page has no heading"
+    return match.group(1).strip()
+
+
+def page_title(html: str) -> str:
+    match = re.search(r"<title>(.*?) · Hospital Management</title>", html, re.S)
+    assert match, "page has no title"
+    return match.group(1).strip()
+
+
+def test_expired_form_page_is_titled_form_expired(client, accounts):
+    # Reproduces #204: the expired-form page was titled "Access denied".
+    client.get("/login")
+
+    response = client.post(
+        "/login",
+        data={"login": "synthetic.doctor", "password": PASSWORD, "csrf_token": "expired"},
+    )
+
+    assert response.status_code == 403
+    assert page_heading(response.text) == "Form expired"
+    assert page_title(response.text) == "Form expired"
+    assert "The form has expired" in response.text
+
+
+@pytest.mark.parametrize(
+    ("case", "status", "heading"),
+    [
+        ("role", 403, "Access denied"),
+        ("cross-origin", 403, "Request refused"),
+        ("not-found", 404, "Page not found"),
+        ("other", 405, "Something went wrong"),
+    ],
+)
+def test_error_page_title_matches_the_reason(client, accounts, case, status, heading):
+    if case == "role":
+        log_in_as(client, Role.DOCTOR)
+        response = client.get("/staff")
+    elif case == "cross-origin":
+        token = form_token(client.get("/login").text)
+        response = client.post(
+            "/login",
+            data={"login": "synthetic.doctor", "password": PASSWORD, "csrf_token": token},
+            headers={"Origin": "https://attacker.example"},
+        )
+    elif case == "not-found":
+        response = client.get("/no-such-page")
+    else:
+        response = client.get("/logout")  # only POST is allowed
+
+    assert response.status_code == status
+    assert page_heading(response.text) == heading
+    assert page_title(response.text) == heading
