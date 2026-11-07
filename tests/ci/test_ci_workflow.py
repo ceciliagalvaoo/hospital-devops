@@ -94,6 +94,20 @@ def test_only_the_publish_job_can_write_packages(workflow):
     assert "docker push" in " ".join(s.get("run", "") for s in workflow["jobs"]["publish"]["steps"])
 
 
+def test_verify_image_job_checks_the_published_commit_without_credentials(workflow):
+    verify = workflow["jobs"]["verify-image"]
+    commands = " ".join(step.get("run", "") for step in verify["steps"])
+
+    assert verify["needs"] == ["publish"]
+    assert verify["if"] == workflow["jobs"]["publish"]["if"]
+    assert "permissions" not in verify
+    assert "docker login" not in commands
+    assert 'PUBLISHED_IMAGE="$IMAGE_NAME:sha-${GITHUB_SHA::7}"' in commands
+    assert "pytest -m published" in commands
+    assert verify["env"]["EXPECTED_REVISION"] == "${{ github.sha }}"
+    assert verify["env"]["EXPECTED_VERSION"] == "${{ needs.publish.outputs.version }}"
+
+
 def test_runs_on_main_are_not_cancelled_by_newer_runs(workflow):
     assert (
         workflow["concurrency"]["cancel-in-progress"]
