@@ -22,6 +22,7 @@ pytest -m e2e   # browser end-to-end tests
 | `tests/integration/test_pages.py` | 39 | login pages, role-based navigation, browser errors |
 | `tests/integration/test_us01_authentication.py` | 19 | cases added by T-01.6 (#10) |
 | `tests/e2e/test_login_navigation.py` | 5 | browser end-to-end: login, navigation and logout per role (T-01.7, #11) |
+| `tests/e2e/test_small_screen.py` | 4 | every page fits a 320 px screen without horizontal scrolling, per role and with a 64-character login (defect #202) |
 
 ## Acceptance criteria
 

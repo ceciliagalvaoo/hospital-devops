@@ -1549,7 +1549,7 @@ pytest -m e2e
 pytest -m e2e --headed --slowmo 500     # watch the browser
 ```
 
-A pytest fixture starts the application with Uvicorn on a free local port against the test database and creates one synthetic account per role (`e2e.receptionist`, `e2e.doctor`, `e2e.administrator`), which are deleted afterwards. For each role, the tests log in through the login page, check that the navigation shows exactly the areas of the role and that each opens, check that the other areas return "Access denied" with HTTP 403, log out and check that a protected page then shows the login page with HTTP 401. When end-to-end and integration tests are selected together, the end-to-end tests run last, because their accounts stay in the database for the whole run.
+A pytest fixture starts the application with Uvicorn on a free local port against the test database and creates one synthetic account per role (`e2e.receptionist`, `e2e.doctor`, `e2e.administrator`), which are deleted afterwards. For each role, the tests log in through the login page, check that the navigation shows exactly the areas of the role and that each opens, check that the other areas return "Access denied" with HTTP 403, log out and check that a protected page then shows the login page with HTTP 401. Further tests open every page at a width of 320 px, also with the longest allowed login, and fail if a page scrolls horizontally. When end-to-end and integration tests are selected together, the end-to-end tests run last, because their accounts stay in the database for the whole run.
 
 **Run in a container** (requires Docker):
 
