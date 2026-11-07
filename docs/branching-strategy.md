@@ -2,8 +2,6 @@
 
 This document defines the branching strategy for `hospital-devops` (Lab 5, Task 6, #167). It builds on the workflow already practised in Lab 4 and recorded in [git-workflow.md](git-workflow.md), and on the branch naming convention in README §10.7.
 
-> Lab 5 Tasks 1–5 (the practice repositories) have been deferred. This decision is based on the strategy comparison in the Lab 5 material and on the real practice in this repository during Lab 4.
-
 ## 1. Chosen strategy: feature branching
 
 The project uses **feature branching**:
