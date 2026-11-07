@@ -98,7 +98,8 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-01: #13, CSRF protection for every state-changing request.
   - US-01: #9, login pages and role-based navigation, with placeholder area pages for the Sprint 1 review.
   - US-01: #10, the remaining authentication test cases and the US-01 test map (`docs/testing/us-01-automated-tests.md`).
-- **Next:** #11, Playwright tests for login, navigation and logout per role.
+  - US-01: #11, Playwright end-to-end tests for login, navigation and logout per role (`pytest -m e2e`).
+- **Next:** #12, manual checks of login messages, keyboard navigation and small screens.
 - **Blockers:** none.
 
 ## 3. Increment
