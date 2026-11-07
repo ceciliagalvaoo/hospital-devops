@@ -555,7 +555,7 @@ As this is an individual project, I will keep a short dated work log
 instead of holding a Daily Scrum. Each entry will record completed work,
 the next action and any blockers.
 
-Planning, review and retrospective notes will be stored in the repository.
+Planning, review and retrospective notes and the work log are stored in the repository, one file per sprint in [docs/sprints/](docs/sprints/), starting with [docs/sprints/sprint-1.md](docs/sprints/sprint-1.md).
 
 ### 5.4 Backlog refinement
 
@@ -1225,7 +1225,7 @@ They may be selected when required work is complete and capacity remains. They w
 - Status values are Backlog, Ready, In Progress, In Review and Done (see §10.4).
 - Only stories satisfying the Definition of Done contribute to velocity.
 - Unfinished work returns to planning for dependency, estimate and priority review.
-- Sprint reviews and retrospectives will be recorded in the repository.
+- Sprint reviews and retrospectives are recorded in the repository, in [docs/sprints/](docs/sprints/).
 - Changes to this forecast will also be reflected in the sprint outline in §5.2.
 
 ## 9. Tools and technology stack
@@ -1325,7 +1325,7 @@ External paid services are not required by the planned architecture.
 The backlog from §4 and §6 is tracked in the GitHub Project **Hospital DevOps**, linked to this repository:
 <https://github.com/users/ceciliagalvaoo/projects/3>.
 
-Every epic, user story and task is a GitHub Issue in this repository, assigned to the project owner. Backlog identifiers (E1, US-01, T-01.1) are kept at the start of every issue title and are different from GitHub issue numbers (#1, #3, #5). The project currently contains 6 epics, 26 user stories (including the three optional ones) and 127 tasks.
+Every epic, user story and task is a GitHub Issue in this repository, assigned to the project owner. Backlog identifiers (E1, US-01, T-01.1) are kept at the start of every issue title and are different from GitHub issue numbers (#1, #3, #5). The project currently contains 6 epics, 26 user stories (including the three optional ones) and 142 tasks: the 127 backlog tasks from §6 and 15 standalone tasks for coursework (`LAB…`), documentation (`DOC-…`) and the sprint ceremonies (`SPRINTn-…`).
 
 ### 10.2 Labels and hierarchy
 
@@ -1362,7 +1362,7 @@ Priority describes how soon a story is needed, independently of its size:
 
 The optional stories US-19 to US-21 are intentionally left **without a sprint**. They stay in the backlog, outside the 102-point baseline, and are not artificially placed in one of the four sprints (§8.7).
 
-The Sprint iterations are Sprint 1 (16 Oct 2026), Sprint 2 (30 Oct), Sprint 3 (13 Nov) and Sprint 4 (27 Nov), each lasting 14 days. The per-sprint sums in the *Sprint plan* view were cross-checked against §8.2 and match: Sprint 1 = 26, Sprint 2 = 23, Sprint 3 = 24, Sprint 4 = 29 (102 required points), plus 6 optional points with no sprint.
+The Sprint iterations are Sprint 1 (1 Nov 2026), Sprint 2 (15 Nov), Sprint 3 (29 Nov) and Sprint 4 (13 Dec), each lasting 14 days, so the last sprint ends on 26 Dec 2026. The per-sprint sums in the *Sprint plan* view were cross-checked against §8.2 and match: Sprint 1 = 26, Sprint 2 = 23, Sprint 3 = 24, Sprint 4 = 29 (102 required points), plus 6 optional points with no sprint.
 
 ### 10.4 Status workflow and WIP limits
 
