@@ -23,11 +23,12 @@ def _triggers(workflow: dict) -> dict:
     return workflow.get("on", workflow.get(True)) or {}
 
 
-def test_workflow_runs_on_pull_requests_and_pushes_to_main(workflow):
+def test_workflow_runs_on_pull_requests_pushes_to_main_and_release_tags(workflow):
     triggers = _triggers(workflow)
 
     assert "main" in triggers["pull_request"]["branches"]
     assert "main" in triggers["push"]["branches"]
+    assert triggers["push"]["tags"] == ["v*"]
 
 
 def test_workflow_defines_required_check_jobs(workflow):
@@ -67,6 +68,18 @@ def test_publish_job_runs_only_on_main_after_all_required_checks(workflow):
     assert set(publish["needs"]) == check_jobs
     assert "github.event_name == 'push'" in publish["if"]
     assert "github.ref == 'refs/heads/main'" in publish["if"]
+    assert "startsWith(github.ref, 'refs/tags/v')" in publish["if"]
+
+
+def test_publish_job_labels_and_tags_the_image_with_version_and_commit(workflow):
+    steps = workflow["jobs"]["publish"]["steps"]
+    commands = " ".join(step.get("run", "") for step in steps)
+
+    assert steps[0]["with"]["fetch-depth"] == 0
+    assert "python scripts/image_metadata.py" in commands
+    assert "git merge-base --is-ancestor" in commands
+    assert '--build-arg APP_VERSION="$VERSION"' in commands
+    assert '--build-arg VCS_REF="$GITHUB_SHA"' in commands
 
 
 def test_only_the_publish_job_can_write_packages(workflow):
