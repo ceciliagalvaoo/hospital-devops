@@ -58,6 +58,36 @@ def test_e2e_job_runs_browser_tests_and_keeps_artifacts_of_failures(workflow):
     assert upload["with"]["name"] == "playwright-results"
 
 
+def test_publish_job_runs_only_on_main_after_all_required_checks(workflow):
+    publish = workflow["jobs"]["publish"]
+    check_jobs = {
+        job_id for job_id, job in workflow["jobs"].items() if job.get("name") in REQUIRED_CHECKS
+    }
+
+    assert set(publish["needs"]) == check_jobs
+    assert "github.event_name == 'push'" in publish["if"]
+    assert "github.ref == 'refs/heads/main'" in publish["if"]
+
+
+def test_only_the_publish_job_can_write_packages(workflow):
+    assert workflow["permissions"] == {"contents": "read"}
+    writers = {
+        job_id
+        for job_id, job in workflow["jobs"].items()
+        if job.get("permissions", {}).get("packages") == "write"
+    }
+
+    assert writers == {"publish"}
+    assert "docker push" in " ".join(s.get("run", "") for s in workflow["jobs"]["publish"]["steps"])
+
+
+def test_runs_on_main_are_not_cancelled_by_newer_runs(workflow):
+    assert (
+        workflow["concurrency"]["cancel-in-progress"]
+        == "${{ github.event_name == 'pull_request' }}"
+    )
+
+
 def test_workflow_uses_application_image_python_version(workflow):
     image = re.search(
         r"^ARG PYTHON_IMAGE=python:(\d+\.\d+)\.\d+", DOCKERFILE.read_text(encoding="utf-8"), re.M
