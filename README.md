@@ -1587,6 +1587,27 @@ The command creates the active accounts `dev.receptionist`, `dev.doctor` and `de
 | `GET /auth/me` | Returns the logged-in account, or HTTP 401 without a valid session. |
 | `GET /auth/csrf` | Returns the CSRF token for the next state-changing request (`{"csrf_token": "..."}`) and sets the pre-session cookie when the browser has no cookie yet. |
 
+**Use the application in a browser** at <http://127.0.0.1:8000/login> after seeding the development accounts. The pages are server-rendered with Jinja2 (`app/templates/`, styles in `app/static/`):
+
+| Page | Behaviour |
+| --- | --- |
+| `/login` | Login form. Valid credentials redirect to the home page; wrong passwords, unknown logins and inactive accounts see the same message with HTTP 401. |
+| `/` | Home page with the logged-in account, its role and the areas of that role. |
+| `/patients`, `/doctors`, `/appointments`, `/records`, `/staff` | Areas of the application. They are placeholders until the stories that deliver them (see the table below), but already enforce the role checks. |
+| Log out button | Ends the session (`POST /logout`) and returns to the login page. |
+
+The navigation shows each role only the areas allowed by the RBAC matrix (§3.2); `app/navigation.py` holds this table and is used both for the links and for the access checks of the area pages:
+
+| Area | Receptionist | Doctor | Administrator | Delivered by |
+| --- | --- | --- | --- | --- |
+| Patients | Yes | No | Yes | US-03, US-09, US-10, US-17 |
+| Doctors | No | No | Yes | US-02, US-13, US-16 |
+| Appointments | Yes | Yes | Yes | US-04, US-05, US-11, US-12 |
+| Medical records | No | Yes | No | US-06, US-07, US-08, US-18 |
+| Staff accounts | No | No | Yes | US-14, US-15 |
+
+Pages keep the status codes of NFR-04: a page opened without a valid session returns the login page with HTTP 401, and an area of another role returns an "Access denied" page with HTTP 403. Requests whose `Accept` header does not include `text/html`, such as `curl` or API clients, still receive the JSON responses below.
+
 `POST /auth/login` and `POST /auth/logout` require a CSRF token (see below). With `curl`, fetch the token first and fetch it again after logging in, because the token changes with the session:
 
 ```bash

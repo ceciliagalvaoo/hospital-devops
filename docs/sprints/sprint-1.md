@@ -96,7 +96,8 @@ Each entry records the completed work, the next action and any blockers. Entries
   - Lab 5: removed the outdated deferral note as #195 (PR #196).
   - This planning record (#185).
   - US-01: #13, CSRF protection for every state-changing request.
-- **Next:** #9, login interface and role-based navigation.
+  - US-01: #9, login pages and role-based navigation, with placeholder area pages for the Sprint 1 review.
+- **Next:** #10, automated authentication, session, CSRF and role-access tests.
 - **Blockers:** none.
 
 ## 3. Increment
