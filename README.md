@@ -1318,6 +1318,8 @@ This structure keeps application development manageable while supporting the mai
 
 External paid services are not required by the planned architecture.
 
+The architecture as implemented, with its modules, data model, request flow, delivery pipeline and design decisions, is documented in [docs/architecture.md](docs/architecture.md) and updated at the end of every sprint.
+
 ## 10. Project management on GitHub
 
 ### 10.1 GitHub Project
