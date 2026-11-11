@@ -112,10 +112,18 @@ Each entry records the completed work, the next action and any blockers. Entries
   - US-24: #148, a CI job `Verify image` pulls the published image anonymously and checks health, login page, user and labels; run locally against `sha-6b0482d`: 7 of 7 passed.
   - US-24: #148 verified on `main`: `Verify image` pulled `sha-4fcbce3` anonymously and passed 7 of 7 checks.
   - US-24: #149, manual checks: pull requests and manual runs do not publish, and the image of `4fcbce3` matches its commit (digest, revision label, 29 application files, 8 dependencies); 6 of 6 pass. All US-24 tasks are done.
-  - The four Sprint 1 stories meet their acceptance criteria and Definition of Done and are *In Review* until the Sprint Review.
+  - The four Sprint 1 stories meet their acceptance criteria and Definition of Done and stay *In Progress* until they are accepted in the Sprint Review (they were first moved to *In Review*, which README §10.4 reserves for open pull requests, and moved back).
   - #193, `docs/architecture.md`: overview, modules, data model, request flow, delivery, tests, configuration and design decisions, with four Mermaid diagrams.
 - **Next:** #186, Sprint Review, Retrospective and release `v0.2.0` on 2026-11-14.
 - **Blockers:** none.
+
+### 2026-11-10 and 2026-11-11
+
+- **Done:**
+  - Lab 7 planned: Tasks 0–5 in the separate repository `testing-demo`, report as LAB7-REPORT (#218); Task 6 in this project as #216, #217 and #219, moved to Sprint 2 on 2026-11-11.
+  - #218, the Lab 7 report (`docs/testing-lab.md`) with its evidence in `docs/lab7-evidence/`.
+- **Next:** #186, Sprint Review, Retrospective and release `v0.2.0` on 2026-11-14.
+- **Blockers:** none. A network error while creating the Lab 7 issues produced a duplicate, #220, closed as not planned.
 
 ## 3. Increment
 
