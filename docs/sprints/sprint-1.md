@@ -125,14 +125,103 @@ Each entry records the completed work, the next action and any blockers. Entries
 - **Next:** #186, Sprint Review, Retrospective and release `v0.2.0` on 2026-11-14.
 - **Blockers:** none. A network error while creating the Lab 7 issues produced a duplicate, #220, closed as not planned.
 
+### 2026-11-12
+
+- **Done:** Sprint Review demonstration to a classmate (§4).
+- **Next:** #186, review record, retrospective and release.
+- **Blockers:** none.
+
+### 2026-11-14
+
+- **Done:**
+  - Sprint Review (§4): the four stories accepted and closed, velocity 26 points; defect #222 registered for Sprint 2.
+  - Sprint Retrospective (§5), with the branching strategy kept and one improvement action.
+  - README §10.4 and §10.5: WIP limits count tasks and defects only; the Kanban view shows tasks and defects.
+  - Release `v0.2.0` prepared (#186).
+- **Next:** Sprint 2 planning (#187) on 2026-11-15.
+- **Blockers:** none.
+
 ## 3. Increment
 
-To be completed in the Sprint Review (#186).
+The increment of Sprint 1 is the application foundation: a containerised FastAPI application with PostgreSQL and migrations, secure login with role-based access, a CI pipeline with four required checks, and automatic, verified publication of the image to GHCR. The implemented architecture is documented in [docs/architecture.md](../architecture.md).
+
+| Story | What it added | Pull requests | Documentation |
+| --- | --- | --- | --- |
+| US-22 (#131), 5 points | FastAPI application with `/health`, non-root multi-stage image, Docker Compose with PostgreSQL and persistence, migrations as a gating one-off service, container smoke tests | #165 (before the sprint), #170, #171, #172, #173, #182 (Lab 6) | README §11, [docker-build.md](../docker-build.md) |
+| US-01 (#3), 8 points | Staff accounts with bcrypt, development seed, server-side sessions, reusable 401/403 checks, CSRF protection, login pages and role-based navigation, automated and end-to-end tests, manual checks; defects #202 and #204 found by the tests and fixed | #178, #179, #180, #194, #198, #199, #200, #201, #203, #205, #206 | README §11, [testing/us-01-automated-tests.md](../testing/us-01-automated-tests.md), [testing/us-01-manual-checks.md](../testing/us-01-manual-checks.md) |
+| US-23 (#137), 8 points | Pytest fixtures with an isolated test database, CI jobs `Lint`, `Tests`, `E2E` (Playwright, with failure artifacts) and `Container`, a deliberate-failure check, the four jobs as required checks of `main` with merge commits only, and the manual proof that failed checks block merging | #174, #175, #176, #177, #207, #208, #210 | README §11, [branching-strategy.md](../branching-strategy.md) §3 and §7, [git-workflow.md](../git-workflow.md) §5, [testing/us-23-manual-checks.md](../testing/us-23-manual-checks.md) |
+| US-24 (#145), 5 points | `Publish` job from `main` and release tags with `sha-<commit>` and version tags and labels, `Verify image` job that pulls the published image anonymously and checks it, and the manual proof that pull requests do not publish | #211, #212, #213, #214 | README §11, [docker-build.md](../docker-build.md) "Versioning and image tags", [testing/us-24-manual-checks.md](../testing/us-24-manual-checks.md) |
+
+Coursework and process work done during the sprint, outside the increment and the velocity: Lab 6 (#181, #183), Lab 5 correction (#195), Lab 7 report (#218), sprint planning record (#185), architecture document (#193) and this review (#186).
+
+**Evidence shown in the review** (README §8.3):
+
+| Evidence | Where |
+| --- | --- |
+| Container startup | `docker compose ps` (db healthy, migrate exited 0, app running) and `/health`; container smoke tests in every `Container` job |
+| Login for each role and denied access | Live demonstration (§4); end-to-end tests `tests/e2e/test_login_navigation.py` |
+| A successful pipeline run | Run 43023718453 on `main` at `4c1e068`: `Lint`, `Tests`, `E2E`, `Container`, `Publish` and `Verify image` passed |
+| A failed-check example | Test pull request #209, blocked by failed required checks ([evidence](../testing/us-23-evidence/)); deliberate-failure run 42389719199 with Playwright artifacts |
+| A published image linked to its commit | `ghcr.io/ceciliagalvaoo/hospital-devops:sha-4c1e068`, whose `revision` label is the full SHA of `4c1e068`; tags `main`, `sha-6b0482d`, `sha-4fcbce3`, `sha-d1d025c`, `sha-5f03591` and `sha-4c1e068` in the registry |
+| Test results | Default run: 179 passed and 1 skipped with 100 % line and branch coverage of `app/`; 9 end-to-end, 6 smoke and 7 published-image tests passing in CI |
 
 ## 4. Sprint Review
 
-To be completed on 2026-11-14 (#186).
+Held on 2026-11-14. The application was demonstrated on 2026-11-12 to a classmate who knows Git and Docker from the course and had never seen the project (about 25 minutes: 15 minutes following the review evidence of README §8.3, 10 minutes of free exploration), on the developer's computer in Chrome on Windows 11, with the Docker Compose stack at `5f03591` and the seeded development accounts.
+
+### 4.1 Stories
+
+| Story | Points | Acceptance criteria and Definition of Done | Result |
+| --- | --- | --- | --- |
+| US-22 Containerised application and database | 5 | All met | Accepted, closed |
+| US-01 Login and role-based access | 8 | All met; defect #222 (below) does not affect an acceptance criterion, because the session is ended on the server | Accepted, closed |
+| US-23 Continuous integration and merge checks | 8 | All met | Accepted, closed |
+| US-24 Automated container publication | 5 | All met | Accepted, closed |
+
+**Velocity:** 26 of 26 forecast points (README §8.1). No work returns to the backlog, and no story is re-estimated. The measured velocity of 26 points is the capacity reference for Sprint 2, whose plan is 23 points (README §8.4).
+
+### 4.2 Demonstration and feedback
+
+Each item of the review evidence worked in the demonstration. The classmate's feedback, in summary:
+
+- **Clear:** the navigation changes with the role and explains the permissions on its own; the same message for a wrong password and an unknown login was recognised as deliberate; the "Access denied" page keeps the navigation; the merge stays blocked even for the administrator; the `revision` label links the image to its commit; the pages work on a small screen and with the keyboard.
+- **Confusing:** the migration container shown as *Exited (0)*; the placeholder text naming user-story IDs ("delivered by US-03, US-09, …"); a login typed with a capital letter (`Dev.Doctor`) refused with the generic message; "Access denied" not saying which role has access; the *Latest* badge on the package page (GitHub's label for the newest version, not the image tag `latest`); the length of the `docker image inspect` command.
+- **Missing:** the hospital functions themselves (patients, appointments), and password recovery.
+- **Overall:** 8/10 — "a solid base for a first sprint: login, permissions and pipeline; what is missing is the system doing hospital things".
+
+### 4.3 Backlog changes
+
+| Finding | Decision |
+| --- | --- |
+| After logging out, the browser's **Back** button shows the previous page with the account name (no `Cache-Control: no-store`) | Defect **#222** (T-01.12, P0) in Sprint 2 |
+| Swagger UI at `/docs` is reachable without login | To decide in the Sprint 2 planning (#187) |
+| Logins are case-sensitive, and the interface does not say so | To decide in the Sprint 2 planning (#187) |
+| Placeholder pages name user-story IDs | Wording to decide in the Sprint 2 planning (#187) |
+| "Access denied" does not say who has access | Optional improvement, noted for the Sprint 2 planning (#187) |
+| No password recovery | Out of scope: accounts are managed by the administrator (US-14, US-15) |
+| The interface is in English | To decide in the Sprint 2 planning (#187) |
+
+The Lab 7 Task 6 issues (#216, #217, #219) were moved to Sprint 2 on 2026-11-11.
 
 ## 5. Sprint Retrospective
 
-To be completed on 2026-11-14 (#186).
+Held on 2026-11-14, after the review.
+
+**What went well**
+
+- The 26 forecast points were done on 2026-11-07, seven days before the end of the sprint, working one task at a time through the full cycle.
+- The tests found two defects before they reached a user (#202 at 320 px, #204 in the error-page titles), and a deliberate mutation check in almost every task showed that the tests fail when the behaviour breaks.
+- CI with four required checks and the traceable, verified publication to GHCR were in place by the end of the sprint, as planned in §1.5.
+
+**What went badly**
+
+- The Sprint 1 iteration in the GitHub Project was configured with 30 days instead of two weeks, and was corrected only on 2026-11-07.
+- The format of the pull-request titles and descriptions drifted from the established pattern in #184 and #194, and the PR texts needed corrections.
+- The four stories were moved to *In Review* although no pull request was open, and the *In Progress* limit was exceeded, because README §10.4 did not say what the WIP limits count. Fixed with the rule in §10.4 and a filtered Kanban view.
+- A wrong CI run number was written in four story comments and corrected afterwards; a network error produced a duplicate issue (#220).
+
+**Blockers:** none stopped the work.
+
+**Branching strategy** (review promised in `docs/branching-strategy.md` §1): **kept**. Task branches lived less than a day and never needed a conflict resolution, and the four required checks already validate every merge into `main`. The decision is reviewed again if work runs in parallel or branches start to live longer.
+
+**Improvement action for Sprint 2:** before changing the board and before opening a pull request, check a short list: the status matches README §10.4 and the WIP limits; the pull-request title and description follow the pattern of the task type; every run number, issue number and link written in a comment or description is copied from its source, not from memory. The result is checked in the Sprint 2 retrospective (#188).
