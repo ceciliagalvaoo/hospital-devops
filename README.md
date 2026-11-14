@@ -1378,6 +1378,8 @@ The Sprint iterations are Sprint 1 (1 Nov 2026), Sprint 2 (15 Nov), Sprint 3 (29
 
 The limits are lower than the course suggestion because this is an individual project. GitHub shows a warning but does not enforce them, so they are respected by convention. Blocked items are never moved to Ready.
 
+The limits of *In Progress* and *In Review* count **tasks and defects only**. User stories never enter *In Review*, which is reserved for open pull requests: a story is *In Progress* from its first started task until it is accepted in the Sprint Review, and then *Done*. This rule was added on 2026-11-07, when the four Sprint 1 stories exceeded the *In Progress* limit while waiting for the review (`docs/sprints/sprint-1.md` §5).
+
 ### 10.5 Views
 
 | View | Layout | Configuration | Question it answers |
@@ -1385,9 +1387,9 @@ The limits are lower than the course suggestion because this is an individual pr
 | Backlog | Table | All items, with Parent issue, Sub-issues progress, Story points, Priority, Epic, Item type and Sprint | Is every item in the tree, with its fields? |
 | Backlog by priority | Table | Filter `label:user-story`, sorted by Priority; shows Story points, Priority, Sprint and Epic | What matters most, regardless of when? |
 | Sprint plan | Table | Filter `label:user-story`, grouped by Sprint, with the Story points sum per group | Is each sprint deliverable, and does it match §8.2? |
-| Kanban – Sprint | Board | Columns by Status, filter `sprint:@current`; cards show Story points, Priority, assignees and labels | What is happening in the current sprint? |
+| Kanban – Sprint | Board | Columns by Status, filter `sprint:@current -label:user-story`; cards show Priority, assignees and labels | What are the tasks and defects of the current sprint doing, within the WIP limits? |
 
-Only user stories are counted in the planning views, so task rows do not duplicate the story-point sums. The Kanban board stays empty until the current date falls inside a Sprint iteration; before that, the *Backlog* view is used.
+Only user stories are counted in the planning views, so task rows do not duplicate the story-point sums; the *Kanban – Sprint* view shows only tasks and defects, so its columns match the WIP limits of §10.4, and the stories of the sprint are followed in the *Sprint plan* view. The Kanban board stays empty until the current date falls inside a Sprint iteration; before that, the *Backlog* view is used.
 
 ### 10.6 Automation
 

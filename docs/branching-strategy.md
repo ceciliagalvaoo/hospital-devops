@@ -23,7 +23,7 @@ The project uses **feature branching**:
 
 The choice of strategy depends on the project's needs, not only on team size: Git Flow or trunk-based development can work for teams and for individuals. For this project, at this stage, feature branching gives review and traceability with the least overhead. The decision will be reviewed if the test suite and CI mature enough to support shorter-lived branches.
 
-The table records the situation when the strategy was chosen (2026-10-31). Since then, Sprint 1 added the CI workflow (#139, #144, #140) and made its jobs required checks (#141, §7); the decision is reviewed in the Sprint 1 retrospective (#186).
+The table records the situation when the strategy was chosen (2026-10-31). Since then, Sprint 1 added the CI workflow (#139, #144, #140) and made its jobs required checks (#141, §7); the decision was reviewed in the Sprint 1 retrospective (2026-11-14, #186) and **kept**: task branches lived less than a day, never needed a conflict resolution, and with the four required checks every merge into `main` is already validated, which is the safety net that trunk-based development would rely on. Feature branching keeps the review checkpoint and the traceability from issue to pull request at no extra cost. The decision is reviewed again if work runs in parallel or branches start to live longer than a few days.
 
 ## 2. Branch types and naming rules
 
@@ -97,7 +97,9 @@ git fetch --prune
   - While the version is `0.y.z`, the application is still in initial development and may change; `1.0.0` is reserved for the first version considered stable for its intended use.
 - **Where tags are created.** Only **annotated tags** (`git tag -a`) on **validated commits of `main`**, normally the merge commit of the pull request that completes an increment, typically at the end of a sprint. Tags are never created on task branches.
 - **Who creates them.** The project owner creates the tags, pushes them explicitly (`git push origin vX.Y.Z`, because `git push` does not send tags) and publishes the GitHub Release. Pushing the tag also runs the CI workflow, which publishes the image tags `X.Y.Z`, `X.Y` and `latest` after the checks pass ([docker-build.md](docker-build.md#versioning-and-image-tags)). There is one release per sprint.
-- **Existing release.** `v0.1.0` is an annotated tag on `849318c` (merge of PR #165), with a published GitHub Release: <https://github.com/ceciliagalvaoo/hospital-devops/releases/tag/v0.1.0>.
+- **Releases.**
+  - `v0.1.0`: annotated tag on `849318c` (merge of PR #165), with a published GitHub Release: <https://github.com/ceciliagalvaoo/hospital-devops/releases/tag/v0.1.0>.
+  - `v0.2.0` (**latest**, end of Sprint 1): annotated tag on the merge commit of the Sprint 1 review pull request (#186), with a published GitHub Release that summarises the increment and links to `docs/sprints/sprint-1.md`; it also published the image tags `0.2.0`, `0.2` and `latest`.
 - **Published release tags are immutable.** A tag that belongs to a published release is never moved, deleted or recreated; a correction is released as a new version. Temporary tags created for exercises are not releases and may be removed: in Lab 4, the lightweight tag `v0.1.0-rc1` was deleted locally (`git tag -d v0.1.0-rc1`) and on the remote (`git push origin --delete v0.1.0-rc1`).
 
 ```bash
