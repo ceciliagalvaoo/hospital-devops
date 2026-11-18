@@ -9,6 +9,7 @@ import os
 import socket
 import threading
 import time
+import uuid
 from dataclasses import dataclass
 
 import pytest
@@ -19,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from app import db
 from app.main import app
-from app.models import Role, StaffAccount
+from app.models import Patient, Role, StaffAccount
 from tests.database import get_test_database_url
 
 PASSWORD = "synthetic-e2e-password"
@@ -104,3 +105,14 @@ def live_server(db_engine: Engine, e2e_accounts) -> str:
 def base_url(live_server: str) -> str:
     """Point pytest-playwright's relative page.goto() calls at the live server."""
     return live_server
+
+
+@pytest.fixture
+def patient_name(db_engine: Engine):
+    """A unique synthetic patient name prefix for one test. The live server commits to the
+    test database, so every patient whose name starts with it is deleted afterwards."""
+    prefix = f"E2E Synthetic {uuid.uuid4().hex[:8]}"
+    yield prefix
+    with Session(db_engine) as session:
+        session.execute(delete(Patient).where(Patient.full_name.startswith(prefix)))
+        session.commit()
