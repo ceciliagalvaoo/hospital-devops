@@ -3,12 +3,5 @@
 {% block content %}
 <h1>{{ area.title }}</h1>
 <p>{{ area.description }}</p>
-{% if area.actions %}
-<ul class="area-actions">
-  {% for label, path in area.actions %}
-  <li><a href="{{ path }}">{{ label }}</a></li>
-  {% endfor %}
-</ul>
-{% endif %}
 <p class="message notice">This area is under construction. It is delivered by {{ area.stories }}.</p>
 {% endblock %}

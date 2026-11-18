@@ -52,7 +52,8 @@ The command creates the active accounts `dev.receptionist`, `dev.doctor` and `de
 | --- | --- |
 | `/login` | Login form. Valid credentials redirect to the home page; wrong passwords, unknown logins and inactive accounts see the same message with HTTP 401. |
 | `/` | Home page with the logged-in account, its role and the areas of that role. |
-| `/patients`, `/doctors`, `/appointments`, `/records`, `/staff` | Areas of the application. They are placeholders until the stories that deliver them (see the table below), but already enforce the role checks. |
+| `/patients` | Patients area (US-09), for receptionists and administrators: a link to register a patient and the search by name or record number. Results list the record number, the name (linked to the record), the date of birth and the status, ordered by name, at most 50 with a notice when there are more; a search without matches shows an empty-state message with a link to register the patient; an empty or one-character query shows its message next to the field with HTTP 422. On small screens the table scrolls inside its own keyboard-focusable region. |
+| `/doctors`, `/appointments`, `/records`, `/staff` | Areas of the application. They are placeholders until the stories that deliver them (see the table below), but already enforce the role checks. |
 | `/patients/new` | Patient registration form (US-03), for receptionists and administrators. Invalid data returns the form with HTTP 422, the entered values, a summary of the errors linked to the fields and a message next to each invalid field; the focus moves to the first invalid field. A valid patient is saved and the browser is redirected to the record. |
 | `/patients/<id>` | The patient's record: record number, date of birth, phone, e-mail and status, with a confirmation after registration. Unknown records return "Page not found" with HTTP 404. |
 | Log out button | Ends the session (`POST /logout`) and returns to the login page. |

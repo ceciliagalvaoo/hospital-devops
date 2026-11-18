@@ -23,6 +23,7 @@ ALLOWED = {
     Role.ADMINISTRATOR: ["/patients", "/doctors", "/appointments", "/staff"],
 }
 AREA_PATHS = ["/patients", "/doctors", "/appointments", "/records", "/staff"]
+DELIVERED_AREAS = {"/patients"}
 ACCESS_CASES = [(path, role) for path in AREA_PATHS for role in Role]
 
 
@@ -166,7 +167,8 @@ def test_area_pages_follow_the_rbac_matrix(client, accounts, path, role):
 
     if path in ALLOWED[role]:
         assert response.status_code == 200
-        assert "under construction" in response.text
+        # Areas whose stories are delivered have their own page instead of the placeholder.
+        assert ("under construction" in response.text) == (path not in DELIVERED_AREAS)
     else:
         assert response.status_code == 403
         assert "Access denied" in response.text
