@@ -5,8 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
-    # Release tags (one per sprint) also publish version tags of the image.
-    tags: ["v*"]
+    # Release tags are handled by release.yml, which promotes the tested image without a build.
   workflow_dispatch:
     inputs:
       force_failure:
@@ -158,8 +157,15 @@ jobs:
     name: Container
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      tags: ${{ steps.meta.outputs.tags }}
+      commit_tag: ${{ steps.meta.outputs.commit_tag }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          # Full history and tags: the version of a main build follows the latest tag.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v7.1.0
         with:
@@ -170,86 +176,106 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
-      - name: Build application image
-        run: docker build --tag "hospital-devops:ci-${{ github.sha }}" .
+      - name: Compute version and image names (main only)
+        id: meta
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: python scripts/image_metadata.py
 
-      - name: Run container smoke tests
+      # Built once: this image is smoke-tested here and pushed unchanged by Publish.
+      - name: Build application image
+        run: >-
+          docker build
+          --build-arg APP_VERSION="${VERSION:-0.0.0}"
+          --build-arg VCS_REF="$GITHUB_SHA"
+          --tag hospital-devops:ci .
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+
+      - name: Run container smoke tests against the built image
         run: pytest -m smoke -v
+        env:
+          SMOKE_IMAGE: hospital-devops:ci
+
+      - name: Save the tested image for publishing (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker save hospital-devops:ci | gzip > tested-image.tar.gz
+
+      - name: Upload the tested image (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: tested-image
+          path: tested-image.tar.gz
+          retention-days: 1
+          if-no-files-found: error
 
   publish:
     name: Publish
-    # Pushes to main (a merged pull request) and release tags only, after all required checks
-    # passed on the same commit.
-    if: >-
-      github.event_name == 'push'
-      && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    # Pushes to main only (a merged pull request), after all required checks passed on the
+    # same commit. Release tags are promoted by release.yml.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [lint, test, e2e, container]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment: test
     permissions:
       contents: read
       packages: write
     outputs:
-      version: ${{ steps.meta.outputs.version }}
+      version: ${{ needs.container.outputs.version }}
+    env:
+      VERSION: ${{ needs.container.outputs.version }}
+      TAGS: ${{ needs.container.outputs.tags }}
+      COMMIT_TAG: ${{ needs.container.outputs.commit_tag }}
     steps:
-      - uses: actions/checkout@v7.0.1
+      - name: Download the tested image
+        uses: actions/download-artifact@v8.0.2
         with:
-          # Full history and tags, for git describe and the release-tag check.
-          fetch-depth: 0
+          name: tested-image
 
-      - name: Check that a release tag points to a commit on main
-        if: startsWith(github.ref, 'refs/tags/')
-        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
-
-      - name: Compute version and image tags
-        id: meta
-        run: python scripts/image_metadata.py
+      - name: Load the tested image
+        run: gunzip -c tested-image.tar.gz | docker load
 
       - name: Log in to GitHub Container Registry
         run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build application image
-        run: >-
-          docker build
-          --build-arg APP_VERSION="$VERSION"
-          --build-arg VCS_REF="$GITHUB_SHA"
-          --tag "$IMAGE_NAME:build" .
-        env:
-          VERSION: ${{ steps.meta.outputs.version }}
-
-      - name: Tag and push image to GHCR
+      # The upload name build-<commit> holds the manifest pushed by Docker. imagetools then
+      # wraps it once in an index under the commit tag and the dev names; every later
+      # promotion copies that index unchanged, so the digest is the same in every channel.
+      - name: Push the tested image (upload name)
         run: |
+          docker tag hospital-devops:ci "$IMAGE_NAME:build-$COMMIT_TAG"
+          docker push "$IMAGE_NAME:build-$COMMIT_TAG"
+
+      - name: Name the tested image with its commit tag and the dev names (no rebuild)
+        run: |
+          args=(--tag "$IMAGE_NAME:$COMMIT_TAG")
+          for tag in $TAGS; do args+=(--tag "$IMAGE_NAME:$tag"); done
+          docker buildx imagetools create "${args[@]}" "$IMAGE_NAME:build-$COMMIT_TAG"
+
+      - name: Check that every name has the digest of the tested image
+        run: |
+          digest() { docker buildx imagetools inspect "$IMAGE_NAME:$1" | awk '/^Digest:/ {print $2}'; }
+          expected="$(digest "$COMMIT_TAG")"
           for tag in $TAGS; do
-            docker tag "$IMAGE_NAME:build" "$IMAGE_NAME:$tag"
-            docker push "$IMAGE_NAME:$tag"
+            test "$(digest "$tag")" = "$expected" || { echo "::error::$tag does not match $COMMIT_TAG"; exit 1; }
           done
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-
-      - name: Record the published image
-        run: |
-          first_tag="${TAGS%% *}"
           {
-            echo "### Published image"
+            echo "### Published image (dev channel)"
             echo
             echo "- Image: \`$IMAGE_NAME\`"
-            echo "- Tags: \`$TAGS\`"
+            echo "- Names: \`$COMMIT_TAG $TAGS\`"
             echo "- Version: \`$VERSION\`"
             echo "- Commit: \`$GITHUB_SHA\`"
-            echo "- Digest: \`$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE_NAME:$first_tag")\`"
+            echo "- Digest: $expected"
           } >> "$GITHUB_STEP_SUMMARY"
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          VERSION: ${{ steps.meta.outputs.version }}
 
   verify-image:
     name: Verify image
     # Pulls the image that Publish pushed, without credentials, and starts it with PostgreSQL.
-    if: >-
-      github.event_name == 'push'
-      && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [publish]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -273,4 +299,3 @@ jobs:
           export PUBLISHED_IMAGE="$IMAGE_NAME:sha-${GITHUB_SHA::7}"
           echo "Checking $PUBLISHED_IMAGE"
           pytest -m published -v
-

@@ -32,9 +32,11 @@ def published_image() -> str:
 @pytest.fixture(scope="module")
 def published_stack(tmp_path_factory, published_image):
     """The Compose stack with the published image pulled from the registry, never built."""
-    compose_stack = ComposeStack(tmp_path_factory.mktemp("env"), (PUBLISHED_IMAGE_FILE,))
+    compose_stack = ComposeStack(
+        tmp_path_factory.mktemp("env"), (PUBLISHED_IMAGE_FILE,), source="pull"
+    )
     try:
-        result = compose_stack.up(check=False, build=False)
+        result = compose_stack.up(check=False)
         if result.returncode != 0:
             pytest.fail(f"docker compose up failed:\n{result.stderr}\n{compose_stack.logs()}")
         yield compose_stack

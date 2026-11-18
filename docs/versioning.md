@@ -47,10 +47,10 @@ The next dev version follows the latest version tag in the history of the commit
 
 Deployments name an exact version or a digest, never a moving tag: `latest` says nothing about what is running and changes when a release is published.
 
-Status on 2026-11-18: the version and channel rules above are applied by `scripts/image_metadata.py`. The image names of the dev channel (`X.Y.Z-dev.N`, `dev`) and the promotion of the tested image to rc and release names without a rebuild are introduced by #228; until then, `main` builds are published as `main` and `sha-<commit>`.
+The image of a commit is built once; the channel names are added to it without a rebuild, so all names of one commit share one digest ([docker-build.md](docker-build.md#versioning-and-image-tags)). A promoted image keeps the version label of its dev build, because the label is part of the tested bytes.
 
 ## 5. Who may create a release
 
 - Only the project owner creates and pushes `v*` tags (`docs/branching-strategy.md` §4) and approves releases.
 - Release tags are never moved, deleted or re-created: a correction is released as a new version.
-- A version that is published once is never published again with different content; the registry name of an exact version is therefore safe to deploy. Defect #224 records the one known violation, a release run that re-pushed a commit tag, and #228 removes its cause.
+- A version that is published once is never published again with different content; the registry name of an exact version is therefore safe to deploy. Defect #224 recorded the one violation, the `v0.2.0` release run re-pushing `sha-b155343`; since #228 a release only adds names and never pushes the commit tag.

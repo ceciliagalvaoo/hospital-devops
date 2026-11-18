@@ -1,0 +1,10 @@
+# Compose override used by the smoke tests in CI: the migration step and the application run
+# the image named by SMOKE_IMAGE, already built and loaded locally by the Container job, so
+# the image that the smoke tests check is the image that is published (#228).
+services:
+  migrate:
+    image: ${SMOKE_IMAGE:?set SMOKE_IMAGE to the locally built image to check}
+    pull_policy: never
+  app:
+    image: ${SMOKE_IMAGE:?set SMOKE_IMAGE to the locally built image to check}
+    pull_policy: never

@@ -29,9 +29,11 @@ def test_main_builds_get_the_next_development_version(tags, expected):
     assert metadata.channel == "dev"
 
 
-def test_main_builds_keep_their_image_tags():
-    # The dev image names are changed with the promotion in #228.
-    assert image_metadata(MAIN, SHA, ["v0.2.0"], "57").tags == ["main", "sha-437b1b4"]
+def test_main_builds_get_the_dev_names_and_the_commit_tag():
+    metadata = image_metadata(MAIN, SHA, ["v0.2.0"], "57")
+
+    assert metadata.tags == ["0.3.0-dev.57", "dev"]
+    assert metadata.commit_tag == "sha-437b1b4"
 
 
 def test_tags_of_other_forms_do_not_count_for_the_next_version():
@@ -53,13 +55,13 @@ def test_main_builds_need_a_run_number(run_number):
 def test_release_candidate_tag():
     metadata = image_metadata("refs/tags/v0.2.1-rc.1", SHA, [], "")
 
-    assert metadata == ("0.2.1-rc.1", "rc", ["0.2.1-rc.1", "rc"])
+    assert metadata == ("0.2.1-rc.1", "rc", ["0.2.1-rc.1", "rc"], "sha-437b1b4")
 
 
 def test_release_tag():
     metadata = image_metadata("refs/tags/v0.2.1", SHA, [], "")
 
-    assert metadata == ("0.2.1", "release", ["0.2.1", "0.2", "latest", "sha-437b1b4"])
+    assert metadata == ("0.2.1", "release", ["0.2.1", "0.2", "latest"], "sha-437b1b4")
 
 
 def test_multi_digit_release_versions_are_kept():
@@ -108,3 +110,14 @@ def test_release_candidates_sort_before_their_release():
 
 def test_latest_tag_of_no_version_tags_is_none():
     assert latest_tag(["release", "v1"]) is None
+
+
+# ---------------------------------------------------------------- promotion (#228)
+
+
+@pytest.mark.parametrize("ref", ["refs/tags/v0.2.1-rc.1", "refs/tags/v0.2.1"])
+def test_promotion_names_never_include_the_commit_tag(ref):
+    # Reproduces #224: the release run re-pushed sha-<commit> with a different image.
+    metadata = image_metadata(ref, SHA, [], "")
+
+    assert "sha-437b1b4" not in metadata.tags
