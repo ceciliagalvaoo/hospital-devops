@@ -23,7 +23,10 @@ def _free_port() -> int:
 class ComposeStack:
     """An isolated Docker Compose project started from settings based on .env.example."""
 
-    def __init__(self, env_dir: Path, extra_files: tuple[Path, ...] = ()) -> None:
+    def __init__(
+        self, env_dir: Path, extra_files: tuple[Path, ...] = (), source: str = "build"
+    ) -> None:
+        self.source = source
         self.project = f"hospital-smoke-{uuid.uuid4().hex[:8]}"
         self.port = _free_port()
         self.env_file = env_dir / f"{self.project}.env"
@@ -44,13 +47,18 @@ class ComposeStack:
             timeout=STARTUP_TIMEOUT_SECONDS + 60,
         )
 
-    def up(self, check: bool = True, build: bool = True) -> subprocess.CompletedProcess[str]:
-        """Start the stack; with build=False, images are pulled instead of built locally."""
-        image_source = ("--build",) if build else ("--no-build", "--pull", "always")
+    IMAGE_SOURCES = {
+        "build": ("--build",),  # build the image from the Dockerfile
+        "pull": ("--no-build", "--pull", "always"),  # pull a published image
+        "local": ("--no-build", "--pull", "never"),  # use an image already loaded locally
+    }
+
+    def up(self, check: bool = True) -> subprocess.CompletedProcess[str]:
+        """Start the stack, taking the application image from ``self.source``."""
         return self.compose(
             "up",
             "--detach",
-            *image_source,
+            *self.IMAGE_SOURCES[self.source],
             "--wait",
             "--wait-timeout",
             str(STARTUP_TIMEOUT_SECONDS),
