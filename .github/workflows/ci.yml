@@ -83,7 +83,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
-      - name: Run unit and integration tests with coverage
+      # The coverage gate (100 % of lines and branches of app/) is configured in .coveragerc.
+      - name: Run unit and integration tests with the coverage gate
         run: >-
           pytest -v
           --cov=app
