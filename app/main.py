@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
@@ -25,17 +26,16 @@ PAGE_ERRORS = {
 GENERIC_ERROR_TITLE = "Something went wrong"
 LOGIN_NOTICE = "Please log in to continue."
 
-# CSRF protection applies to every route; safe methods pass through unchecked.
-app = FastAPI(title="Hospital Management", dependencies=[Depends(csrf_protect)])
-app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
-app.include_router(health.router)
-app.include_router(auth.router)
-app.include_router(pages.router)
-
 STATIC_PREFIX = "/static/"
+# Interactive API documentation, served only in development (#225).
+API_DOC_URLS = {"docs_url": "/docs", "redoc_url": "/redoc", "openapi_url": "/openapi.json"}
 
 
-@app.middleware("http")
+def api_docs_enabled() -> bool:
+    """The API documentation lists every endpoint; it is only needed while developing."""
+    return os.environ.get("APP_ENV") == "development"
+
+
 async def do_not_store_responses(request: Request, call_next) -> Response:
     """Pages and API responses may contain account data, so browsers must not keep a copy:
     otherwise the Back button shows a page of an ended session (#222). Static files may
@@ -46,7 +46,6 @@ async def do_not_store_responses(request: Request, call_next) -> Response:
     return response
 
 
-@app.exception_handler(StarletteHTTPException)
 async def page_errors(request: Request, exc: StarletteHTTPException) -> Response:
     """Browsers receive pages for errors; API clients keep the JSON responses."""
     if not wants_html(request):
@@ -61,3 +60,23 @@ async def page_errors(request: Request, exc: StarletteHTTPException) -> Response
         account=getattr(request.state, "account", None),
         status_code=exc.status_code,
     )
+
+
+def create_app() -> FastAPI:
+    doc_urls = API_DOC_URLS if api_docs_enabled() else dict.fromkeys(API_DOC_URLS)
+    # CSRF protection applies to every route; safe methods pass through unchecked.
+    application = FastAPI(
+        title="Hospital Management", dependencies=[Depends(csrf_protect)], **doc_urls
+    )
+    application.mount(
+        "/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static"
+    )
+    application.include_router(health.router)
+    application.include_router(auth.router)
+    application.include_router(pages.router)
+    application.middleware("http")(do_not_store_responses)
+    application.add_exception_handler(StarletteHTTPException, page_errors)
+    return application
+
+
+app = create_app()

@@ -1493,7 +1493,7 @@ pip install -r requirements-dev.txt
 uvicorn app.main:app --reload
 ```
 
-The health endpoint is available at <http://127.0.0.1:8000/health>. It returns HTTP 200 and `{"status": "ok", "database": "ok"}` when the PostgreSQL database configured in `DATABASE_URL` is reachable, and HTTP 503 and `{"status": "error", "database": "unavailable"}` otherwise. Without a database, run the complete stack with Docker Compose as described below. The interactive API documentation is at <http://127.0.0.1:8000/docs>.
+The health endpoint is available at <http://127.0.0.1:8000/health>. It returns HTTP 200 and `{"status": "ok", "database": "ok"}` when the PostgreSQL database configured in `DATABASE_URL` is reachable, and HTTP 503 and `{"status": "error", "database": "unavailable"}` otherwise. Without a database, run the complete stack with Docker Compose as described below. The interactive API documentation (`/docs`, `/redoc` and `/openapi.json`) is served only when `APP_ENV=development`, as set in `.env.example`, for example at <http://127.0.0.1:8000/docs>. Without that setting, including in the published image, these paths return HTTP 404, so the endpoints are not listed to anonymous visitors (#225).
 
 **Test** the application:
 

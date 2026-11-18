@@ -166,7 +166,7 @@ Manual checks and the map of tests per story are in `docs/testing/`.
 | --- | --- | --- |
 | `DATABASE_URL` | application, Alembic | PostgreSQL connection (`postgresql+psycopg://...`), set by Compose from `POSTGRES_*` |
 | `SESSION_COOKIE_SECURE` | application | Marks the session and CSRF cookies `Secure`; must be `true` behind HTTPS |
-| `APP_ENV`, `SEED_PASSWORD` | `app.seed` | The seed runs only with `APP_ENV=development` and a password |
+| `APP_ENV`, `SEED_PASSWORD` | application, `app.seed` | With `APP_ENV=development` the application serves the API documentation (`/docs`, `/redoc`, `/openapi.json`) and the seed may run, with a password; otherwise neither is available |
 | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `APP_PORT`, `TEST_DB_PORT` | Compose | Database credentials and host ports (`.env`, documented in `.env.example`) |
 | `TEST_DATABASE_URL` | tests | Test database; defaults to the `test-db` service |
 
