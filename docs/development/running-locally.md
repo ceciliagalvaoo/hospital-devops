@@ -65,4 +65,18 @@ The navigation shows each role only the areas allowed by the RBAC matrix ([requi
 | Medical records | No | Yes | No | US-06, US-07, US-08, US-18 |
 | Staff accounts | No | No | Yes | US-14, US-15 |
 
+**Register a patient** through the API (US-03); the registration page follows in #33. Only receptionists and administrators may register patients; doctors receive HTTP 403 and requests without a session HTTP 401:
+
+| Endpoint | Behaviour |
+| --- | --- |
+| `POST /api/patients` | Form fields `full_name`, `date_of_birth` (`YYYY-MM-DD`), `phone` and `email`. Returns HTTP 201 with the saved patient and its record number (`P-000001`), or HTTP 422 with `{"detail": "Invalid patient data.", "errors": {...}}`, a message for every invalid field. |
+
+The rules are in `app/patients.py` and apply to the API and the pages alike: the name (at most 120 characters) and a real date of birth between 1900-01-01 and today are required; the phone (8 to 15 digits, optionally with `+`, spaces, brackets and hyphens) and the e-mail are optional but must be well formed when given. With `curl`, send the fields with `--data-urlencode`, because a plain `-d` turns the `+` of a phone number into a space (the session cookie and the `token` function are those of the login example in [authentication.md](authentication.md)):
+
+```bash
+curl -b cookies.txt -c cookies.txt -H "X-CSRF-Token: $(token)" "$URL/api/patients" \
+  --data-urlencode "full_name=Synthetic Patient" --data-urlencode date_of_birth=1990-05-17 \
+  --data-urlencode "phone=+55 11 90000-0000" --data-urlencode email=patient@example.test
+```
+
 Pages keep the status codes of NFR-04: a page opened without a valid session returns the login page with HTTP 401, and an area of another role returns an "Access denied" page with HTTP 403. Requests whose `Accept` header does not include `text/html`, such as `curl` or API clients, still receive the JSON responses described in [authentication.md](authentication.md).
