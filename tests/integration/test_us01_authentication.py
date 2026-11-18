@@ -7,6 +7,7 @@ import re
 from datetime import UTC, datetime
 
 import pytest
+from fastapi.routing import iter_route_contexts
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
@@ -31,6 +32,8 @@ STATE_CHANGING_ROUTES = [
     ("POST", "/auth/logout"),
     ("POST", "/login"),
     ("POST", "/logout"),
+    ("POST", "/patients/new"),
+    ("POST", "/patients/{patient_id:int}/contacts"),
 ]
 
 
@@ -121,7 +124,7 @@ def test_every_state_changing_route_refuses_requests_without_a_csrf_token(
 ):
     api_login(client, "synthetic.administrator", PASSWORD)  # logged in, but no token sent
 
-    response = client.request(method, path, data={"login": "x", "password": "y"})
+    response = client.request(method, _concrete(path), data={"login": "x", "password": "y"})
 
     assert response.status_code == 403
     assert response.json() == {"detail": INVALID_TOKEN}
@@ -132,7 +135,7 @@ def test_every_state_changing_route_refuses_requests_without_a_csrf_token(
 def test_every_state_changing_route_accepts_a_valid_token(client, account, method, path):
     response = client.request(
         method,
-        path,
+        _concrete(path),
         data={"login": "synthetic.administrator", "password": PASSWORD},
         headers=csrf_headers(client),
         follow_redirects=False,
@@ -163,9 +166,18 @@ def test_every_state_changing_route_is_listed():
 
 
 def _page_routes() -> dict[str, set[str]]:
-    from app.routes import pages
+    # Every route hidden from the OpenAPI schema, whichever router declares it. (Reading only
+    # app/routes/pages.py missed the patient pages, so POST /patients/new went unlisted.)
+    return {
+        context.path: set(context.methods)
+        for context in iter_route_contexts(app.routes)
+        if context.methods and not context.route.include_in_schema
+    }
 
-    return {route.path: set(route.methods) for route in pages.router.routes}
+
+def _concrete(path: str) -> str:
+    """The path with every parameter replaced by 1, so that the route matches."""
+    return re.sub(r"\{[^}]+\}", "1", path)
 
 
 def test_page_logout_without_token_keeps_the_session(client, account):
