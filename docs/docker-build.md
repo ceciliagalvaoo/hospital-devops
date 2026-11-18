@@ -57,7 +57,7 @@ Published images are built and pushed by the `Publish` job of the CI workflow (`
 
 | Event | Image tags | `org.opencontainers.image.version` |
 | --- | --- | --- |
-| Push to `main` (a merged pull request) | `main`, `sha-<commit>` | `git describe` of the commit, for example `0.1.0-97-g437b1b4`: 97 commits after release `v0.1.0`, at commit `437b1b4` |
+| Push to `main` (a merged pull request) | `main`, `sha-<commit>` | the next development version, for example `0.3.0-dev.57`: the version after the latest tag, numbered by the CI run ([versioning.md](versioning.md) §2) |
 | Push of a release tag `vX.Y.Z` | `X.Y.Z`, `X.Y`, `latest`, `sha-<commit>` | `X.Y.Z` |
 
 `<commit>` is the first seven characters of the commit SHA, and `org.opencontainers.image.revision` always holds the full SHA, so every published image can be traced to its source commit.
