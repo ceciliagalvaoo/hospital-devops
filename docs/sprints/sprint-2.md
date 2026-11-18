@@ -100,8 +100,10 @@ Each entry records the completed work, the next action and any blockers.
 
 ### 2026-11-18
 
-- **Done:** #222, every response except the static files is sent with `Cache-Control: no-store`, so Back after logout shows the login page.
-- **Next:** #225, the API documentation only in development.
+- **Done:**
+  - #222, every response except the static files is sent with `Cache-Control: no-store`, so Back after logout shows the login page.
+  - #225, the API documentation (`/docs`, `/redoc`, `/openapi.json`) is served only with `APP_ENV=development`; the published image returns HTTP 404 for it. The application is now created by `create_app()`.
+- **Next:** #227, versioning rules and channel versions (Lab 8).
 - **Blockers:** none.
 
 ## 3. Increment
