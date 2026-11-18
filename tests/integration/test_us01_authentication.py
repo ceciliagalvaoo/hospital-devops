@@ -26,6 +26,7 @@ HTML = {"Accept": "text/html"}
 # (test_every_state_changing_route_is_listed fails otherwise).
 STATE_CHANGING_ROUTES = [
     ("POST", "/api/patients"),
+    ("POST", "/api/patients/{patient_id}/contacts"),
     ("POST", "/auth/login"),
     ("POST", "/auth/logout"),
     ("POST", "/login"),

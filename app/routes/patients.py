@@ -1,4 +1,5 @@
-"""JSON API for patient records: registration (US-03) and search (US-09).
+"""JSON API for patient records: registration (US-03), search (US-09) and contact updates
+(US-10).
 
 Receptionists and administrators only, following the RBAC matrix (docs/requirements.md §2.2);
 doctors receive HTTP 403."""
@@ -6,7 +7,7 @@ doctors receive HTTP 403."""
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, Query, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 from starlette.responses import Response
 
@@ -17,6 +18,8 @@ from app.patients import (
     InvalidSearch,
     register_patient,
     search_patients,
+    update_contacts,
+    validate_contacts,
     validate_patient,
 )
 
@@ -73,3 +76,26 @@ def search(
             {"detail": invalid.message}, status_code=status.HTTP_422_UNPROCESSABLE_CONTENT
         )
     return {"patients": [patient_response(p) for p in result.patients], "more": result.more}
+
+
+@router.post("/{patient_id}/contacts", response_model=None)
+def update_patient_contacts(
+    db: DbSession,
+    account: PatientStaff,
+    patient_id: int,
+    phone: Annotated[str, Form()] = "",
+    email: Annotated[str, Form()] = "",
+) -> dict[str, str | bool | None] | Response:
+    """Replace the phone and e-mail of a patient; a blank field removes that contact. Invalid
+    data returns HTTP 422 with a message for each field and changes nothing."""
+    patient = db.get(Patient, patient_id)
+    if patient is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not Found")
+    try:
+        contacts = validate_contacts(phone, email)
+    except InvalidPatient as invalid:
+        return JSONResponse(
+            {"detail": INVALID_PATIENT, "errors": invalid.errors},
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        )
+    return patient_response(update_contacts(db, patient, contacts))
