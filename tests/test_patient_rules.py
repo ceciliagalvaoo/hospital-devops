@@ -4,7 +4,14 @@ from datetime import date
 
 import pytest
 
-from app.patients import MESSAGES, InvalidPatient, PatientDetails, validate_patient
+from app.patients import (
+    MESSAGES,
+    ContactDetails,
+    InvalidPatient,
+    PatientDetails,
+    validate_contacts,
+    validate_patient,
+)
 
 TODAY = date(2026, 11, 18)
 VALID = {"full_name": "Synthetic Patient", "date_of_birth": "1990-05-17", "phone": "", "email": ""}
@@ -98,3 +105,35 @@ def test_every_invalid_field_is_reported_at_once():
         "phone": MESSAGES["phone_invalid"],
         "email": MESSAGES["email_invalid"],
     }
+
+
+# ---------------------------------------------------------------- contact updates (T-10.1)
+
+
+def test_contacts_are_trimmed_and_blank_ones_are_removed():
+    assert validate_contacts(" +55 11 90000-0000 ", "  ") == ContactDetails(
+        "+55 11 90000-0000", None
+    )
+    assert validate_contacts("", "") == ContactDetails(None, None)
+
+
+def test_invalid_contacts_are_all_reported():
+    with pytest.raises(InvalidPatient) as raised:
+        validate_contacts("12", "patient@")
+
+    assert raised.value.errors == {
+        "phone": MESSAGES["phone_invalid"],
+        "email": MESSAGES["email_invalid"],
+    }
+
+
+@pytest.mark.parametrize("phone", ["+55 11 91234-5678", "1234567", "1" * 16])
+def test_registration_and_contact_updates_apply_the_same_phone_rule(phone):
+    def outcome(check):
+        try:
+            check()
+        except InvalidPatient as invalid:
+            return invalid.errors.get("phone")
+        return None
+
+    assert outcome(lambda: validate(phone=phone)) == outcome(lambda: validate_contacts(phone, ""))
