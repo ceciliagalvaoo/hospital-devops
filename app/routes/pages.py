@@ -76,5 +76,5 @@ def _area_page(area: Area) -> Callable[..., Response]:
     return area_page
 
 
-for _area in AREAS:
+for _area in (area for area in AREAS if area.placeholder):
     router.add_api_route(_area.path, _area_page(_area), methods=["GET"], name=_area.title)

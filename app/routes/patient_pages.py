@@ -1,4 +1,5 @@
-"""Patient pages (US-03): the registration form and the patient's record.
+"""Patient pages: the patients area with search (US-09), the registration form and the
+patient's record (US-03).
 
 Receptionists and administrators only, like the API (docs/requirements.md §2.2). The form
 applies the rules of app/patients.py, so the pages and the API accept exactly the same data.
@@ -13,7 +14,15 @@ from starlette.responses import Response
 
 from app.access import DbSession, require_roles
 from app.models import Patient, Role, StaffAccount
-from app.patients import EARLIEST_DATE_OF_BIRTH, InvalidPatient, register_patient, validate_patient
+from app.patients import (
+    EARLIEST_DATE_OF_BIRTH,
+    SEARCH_LIMIT,
+    InvalidPatient,
+    InvalidSearch,
+    register_patient,
+    search_patients,
+    validate_patient,
+)
 from app.templating import render
 
 router = APIRouter(include_in_schema=False)
@@ -36,6 +45,23 @@ def _form(request: Request, account: StaffAccount, values: dict, errors: dict, s
         account=account,
         status_code=status_code,
     )
+
+
+@router.get("/patients")
+def patients_area(
+    request: Request, db: DbSession, account: PatientStaff, q: str | None = None
+) -> Response:
+    """The patients area: a link to register a patient and the search. Without ``q`` only the
+    form is shown; an unusable query returns the form with its message and HTTP 422."""
+    context = {"query": q or "", "result": None, "error": None, "limit": SEARCH_LIMIT}
+    status_code = status.HTTP_200_OK
+    if q is not None:
+        try:
+            context["result"] = search_patients(db, q)
+        except InvalidSearch as invalid:
+            context["error"] = invalid.message
+            status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
+    return render(request, "patients.html", context, account=account, status_code=status_code)
 
 
 @router.get("/patients/new")

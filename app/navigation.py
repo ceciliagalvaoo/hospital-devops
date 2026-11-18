@@ -16,7 +16,7 @@ class Area:
     roles: frozenset[Role]
     description: str
     stories: str
-    actions: tuple[tuple[str, str], ...] = ()  # (label, path) links shown on the area page
+    placeholder: bool = True  # False once a story delivers the area's own page
 
 
 AREAS = (
@@ -26,7 +26,7 @@ AREAS = (
         frozenset({Role.RECEPTIONIST, Role.ADMINISTRATOR}),
         "Register, search, edit and deactivate patients.",
         "US-03, US-09, US-10, US-17",
-        actions=(("Register a patient", "/patients/new"),),
+        placeholder=False,  # app/routes/patient_pages.py (US-03, US-09)
     ),
     Area(
         "/doctors",

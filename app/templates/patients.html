@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{% if error %}Error: {% endif %}Patients{% endblock %}
+{% block content %}
+<h1>Patients</h1>
+<p><a href="/patients/new">Register a patient</a></p>
+<form class="search{% if error %} invalid{% endif %}" method="get" action="/patients" role="search">
+  <label for="q">Search by name or record number</label>
+  <p class="hint" id="q-hint">For example "silva maria" or <span class="nowrap">P-000042</span>.</p>
+  {% if error %}<p class="field-error" id="q-error" role="alert">{{ error }}</p>{% endif %}
+  <div class="search-row">
+    <input id="q" name="q" type="search" value="{{ query }}" autocomplete="off" aria-describedby="q-hint{% if error %} q-error{% endif %}"{% if error %} aria-invalid="true" autofocus{% endif %}>
+    <button type="submit">Search</button>
+  </div>
+</form>
+{% if result is not none %}
+{% if result.patients %}
+<p role="status" id="search-summary">{{ result.patients | length }} patient{{ "" if result.patients | length == 1 else "s" }} found for "{{ query }}".</p>
+<div class="results" role="region" aria-labelledby="search-summary" tabindex="0">
+  <table>
+    <thead>
+      <tr><th scope="col">Record number</th><th scope="col">Name</th><th scope="col">Date of birth</th><th scope="col">Status</th></tr>
+    </thead>
+    <tbody>
+      {% for patient in result.patients %}
+      <tr>
+        <td class="nowrap">{{ patient.record_number }}</td>
+        <td><a href="/patients/{{ patient.id }}">{{ patient.full_name }}</a></td>
+        <td class="nowrap">{{ patient.date_of_birth.isoformat() }}</td>
+        <td>{{ "Active" if patient.is_active else "Inactive" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if result.more %}
+<p class="message notice">Only the first {{ limit }} patients are shown. Add more of the name to narrow the search.</p>
+{% endif %}
+{% else %}
+<p class="message notice" role="status" id="search-summary">No patients match "{{ query }}". Check the spelling, search by record number, or <a href="/patients/new">register the patient</a>.</p>
+{% endif %}
+{% endif %}
+{% endblock %}
