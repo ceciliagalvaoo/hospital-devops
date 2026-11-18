@@ -22,7 +22,7 @@ Set the Project fields: Epic and Item type = epic. Leave Story points, Priority 
 User stories are linked as native sub-issues of this epic; tasks are sub-issues of their stories.
 
 ## Completion
-All required user stories in this epic satisfy their acceptance criteria and the Definition of Done (README §4.4). Optional stories do not block completion.
+All required user stories in this epic satisfy their acceptance criteria and the Definition of Done (docs/backlog.md §4). Optional stories do not block completion.
 
 ## Planning
 - Planned across: <Sprint N, Sprint M>.

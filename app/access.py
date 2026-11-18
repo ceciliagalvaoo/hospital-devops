@@ -7,7 +7,7 @@ Routes declare what they require instead of checking the session themselves:
         ...
 
 Unauthenticated requests receive HTTP 401; authenticated accounts without a permitted
-role receive HTTP 403 (README §3.4).
+role receive HTTP 403 (docs/requirements.md §2.4).
 """
 
 from collections.abc import Callable

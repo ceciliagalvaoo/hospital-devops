@@ -9,7 +9,7 @@ Evidence is labelled by source:
 
 ## 1. Branch convention
 
-Task branches follow the convention defined in README §10.7:
+Task branches follow the convention defined in [github-project.md](../github-project.md) §7:
 
 ```text
 <issue-number>-<task-id>-<short-description>
@@ -91,7 +91,7 @@ Verified:
 - **Fast-forward:** `6b0bdba` (`lab4/fast-forward`) was merged without a merge commit, because the base branch had not moved; the history stays a straight line.
 - **Merge commit:** `83508b3` joins `9d92711` and `fadf05d` (`lab4/merge-feature`), because both branches had advanced.
 
-Details are recorded in docs/merge-practice.md.
+Details are recorded in docs/labs/merge-practice.md.
 
 ### Conflict
 
@@ -101,12 +101,12 @@ Verified: `d73964d` (base branch) and `e8fffae` (`lab4/conflict-demo`) changed t
 
 A plain `git stash push` leaves untracked files in the working directory; `git stash push -u` also shelves them. `git stash pop` restores the work and removes it from the list, while `git stash apply` restores it and keeps it.
 
-- Verified: docs/stash-notes.md was added as the untracked file of the exercise; during the interruption a small fix was committed on `lab4/small-fix` (`e078dbc`) and merged in `3fc608c`. In Task 6, `git stash push -u` and `git stash pop` were used on #132 (§3).
+- Verified: docs/labs/stash-notes.md was added as the untracked file of the exercise; during the interruption a small fix was committed on `lab4/small-fix` (`e078dbc`) and merged in `3fc608c`. In Task 6, `git stash push -u` and `git stash pop` were used on #132 (§3).
 - Reported: `git stash pop` and `-u` were practised; `git stash apply` restored the work while the stash stayed in the list, and the stash was then dropped.
 
 ### Collaboration between two copies
 
-- Verified: two clones edited the same line of docs/remote-practice.md (`aac1216` and `ac079cf`), and the conflict was resolved in the merge commit `60dd1d0`, keeping both contributions.
+- Verified: two clones edited the same line of docs/labs/remote-practice.md (`aac1216` and `ac079cf`), and the conflict was resolved in the merge commit `60dd1d0`, keeping both contributions.
 - Reported: the push from copy B was rejected with `fetch first`. After `git fetch`, the branch was 1 commit ahead and 1 behind; `git pull --no-rebase` produced the conflict, which was resolved, and the push succeeded without force.
 
 ## 5. Main protection and pull-request review
@@ -116,7 +116,7 @@ Verified: `main` is protected by the repository ruleset **Protect main** (active
 - a pull request is required before merging, with 0 required approvals;
 - force pushes (non-fast-forward updates) are blocked;
 - deletion of `main` is blocked.
-- since 2026-11-07 (#141), the CI checks `Lint`, `Tests`, `E2E` and `Container` must pass, with the branch up to date with `main`, and only merge commits are allowed (see docs/branching-strategy.md §3 and §7).
+- since 2026-11-07 (#141), the CI checks `Lint`, `Tests`, `E2E` and `Container` must pass, with the branch up to date with `main`, and only merge commits are allowed (see docs/development/branching-strategy.md §3 and §7).
 
 This is an individual project, so there is no second reviewer. Each pull request is reviewed by its author: the full diff is checked and a comment records what was verified before merging. Verified: review comments on #163 and #165. Pull requests are merged with a merge commit to preserve the branch history.
 
@@ -129,7 +129,7 @@ This is an individual project, so there is no second reviewer. Each pull request
 
 ## 7. History
 
-The repository history was saved in docs/git-history.txt with:
+The repository history was saved in docs/labs/git-history.txt with:
 
 ```bash
 git log --oneline --graph --decorate --all

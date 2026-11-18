@@ -12,7 +12,7 @@ The project uses [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`,
 | New functionality that stays compatible | **MINOR** | the user stories delivered by a sprint; there is one minor release per sprint (`v0.2.0` for Sprint 1, `v0.3.0` for Sprint 2) |
 | Compatible bug fixes only | **PATCH** | defect fixes released between two sprints, such as `v0.2.1` |
 
-While the version is `0.y.z`, the application is in initial development and may still change; `1.0.0` is reserved for the first version considered stable for its intended use (`docs/branching-strategy.md` §4).
+While the version is `0.y.z`, the application is in initial development and may still change; `1.0.0` is reserved for the first version considered stable for its intended use (`docs/development/branching-strategy.md` §4).
 
 Pre-releases sort **before** their release, and their numeric parts compare as numbers: `0.3.0-dev.2` < `0.3.0-dev.10` < `0.3.0-rc.1` < `0.3.0` < `0.3.1`.
 
@@ -51,6 +51,6 @@ The image of a commit is built once; the channel names are added to it without a
 
 ## 5. Who may create a release
 
-- Only the project owner creates and pushes `v*` tags (`docs/branching-strategy.md` §4) and approves releases.
+- Only the project owner creates and pushes `v*` tags (`docs/development/branching-strategy.md` §4) and approves releases.
 - Release tags are never moved, deleted or re-created: a correction is released as a new version.
 - A version that is published once is never published again with different content; the registry name of an exact version is therefore safe to deploy. Defect #224 recorded the one violation, the `v0.2.0` release run re-pushing `sha-b155343`; since #228 a release only adds names and never pushes the commit tag.

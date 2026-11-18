@@ -69,7 +69,7 @@ The image is **built once and promoted**: the image that passed the checks of a 
 - **Immutable names:** `sha-<commit>`, `build-<commit>` and every exact version. **Moving names:** `dev`, `rc`, `X.Y` and `latest`. The former moving tag `main` is no longer updated since #228; `dev` replaces it.
 - **No tested image, no release.** `Promote` fails with "No tested image … for commit …" when the tagged commit has no `sha-<commit>` image, that is, when it never passed the CI workflow on `main`.
 - **Pull requests and manual runs** never publish. Only `Publish` (CI) and `Promote` (Release) may write packages, and only the `GitHub Release` job may write to the repository, to create the release with generated notes.
-- **Verification:** after each publication from `main`, the `Verify image` job pulls the `sha-<commit>` tag anonymously, starts it with PostgreSQL and checks `/health`, the login page, the non-root user and the `source`, `revision` and `version` labels (`pytest -m published`, README §11).
+- **Verification:** after each publication from `main`, the `Verify image` job pulls the `sha-<commit>` tag anonymously, starts it with PostgreSQL and checks `/health`, the login page, the non-root user and the `source`, `revision` and `version` labels (`pytest -m published`, [testing.md](development/testing.md)).
 
 To run a specific build, use an exact name or the digest that the run summary records:
 

@@ -9,13 +9,13 @@
 | Review and retrospective | 2026-11-28 (#188) |
 | Release | `v0.3.0` (#188) |
 
-This file is the record of the sprint ceremonies required by README §5.3: the planning, the work log that replaces the Daily Scrum, and the review and retrospective. The pull request of each task adds its own work-log entry.
+This file is the record of the sprint ceremonies required by [planning.md](../planning.md) §1.3: the planning, the work log that replaces the Daily Scrum, and the review and retrospective. The pull request of each task adds its own work-log entry.
 
 ## 1. Sprint Planning
 
 ### 1.1 Goal and selected stories
 
-The goal and the stories come from the projected sprint backlog in README §8.4.
+The goal and the stories come from the projected sprint backlog in [planning.md](../planning.md) §2.4.
 
 | Story | Issue | Deliverable | Points | Priority |
 | --- | --- | --- | --- | --- |
@@ -28,11 +28,11 @@ The goal and the stories come from the projected sprint backlog in README §8.4.
 | US-15 | #19 | Deactivate staff accounts and reject subsequent access | 3 | P2 |
 | **Total** | | | **23** | |
 
-**Refinement** (README §5.4 and §7.6): every story has acceptance criteria in README §4.3; none is larger than 5 points, so no story needs splitting (13-point stories are split and 8-point stories examined); the dependencies on US-01 and US-22 are satisfied by Sprint 1. All selected stories and their 32 tasks are assigned to Sprint 2 in the GitHub Project. The *Done when* conditions of each task are refined when the task starts, as in Sprint 1.
+**Refinement** ([planning.md](../planning.md) §1.4 and [estimation.md](../estimation.md) §6): every story has acceptance criteria in [backlog.md](../backlog.md) §3; none is larger than 5 points, so no story needs splitting (13-point stories are split and 8-point stories examined); the dependencies on US-01 and US-22 are satisfied by Sprint 1. All selected stories and their 32 tasks are assigned to Sprint 2 in the GitHub Project. The *Done when* conditions of each task are refined when the task starts, as in Sprint 1.
 
 ### 1.2 Capacity
 
-Sprint 1 measured a velocity of **26 points** (`docs/sprints/sprint-1.md` §4.1), which replaces the opening forecast (README §8.1). The 23 planned points fit within it. The sprint also contains work without points: two defects, one implementation task from the review, one documentation task, three Lab 7 tasks and the two ceremony tasks. If the capacity is not enough, the P2 stories US-13, US-14 and US-15 are deferred first (README §8.1); the P1 stories and the defects are not deferred.
+Sprint 1 measured a velocity of **26 points** (`docs/sprints/sprint-1.md` §4.1), which replaces the opening forecast ([planning.md](../planning.md) §2.1). The 23 planned points fit within it. The sprint also contains work without points: two defects, one implementation task from the review, one documentation task, three Lab 7 tasks and the two ceremony tasks. If the capacity is not enough, the P2 stories US-13, US-14 and US-15 are deferred first ([planning.md](../planning.md) §2.1); the P1 stories and the defects are not deferred.
 
 ### 1.3 Work without story points
 
@@ -50,20 +50,20 @@ Sprint 1 measured a velocity of **26 points** (`docs/sprints/sprint-1.md` §4.1)
 
 ### 1.4 Task sequence
 
-Dependencies were checked against README §6. Tasks are worked one at a time through the full cycle, and each task is refined when it starts.
+Dependencies were checked against [tasks.md](../tasks.md). Tasks are worked one at a time through the full cycle, and each task is refined when it starts.
 
 1. #187 — this planning (closes on 2026-11-15).
 2. Defects and review follow-up: #222, #224, #225 — small changes that fix what is already published.
 3. #216 — the coverage gate, before new code is added.
 4. #169 — DOC-01, early on purpose: it moves README sections into `docs/`, and every later task edits the documentation; doing it last would conflict with all of them.
-5. Patients: US-03 (#31 → #32 → #33 → #34 → #35 → #36), then US-09 (#38 → #39 → #40 → #41) and US-10 (#43 → #44 → #45 → #46). US-03 and US-09 are completed in the same sprint so that the registration criterion involving search can be verified (README §8.4).
+5. Patients: US-03 (#31 → #32 → #33 → #34 → #35 → #36), then US-09 (#38 → #39 → #40 → #41) and US-10 (#43 → #44 → #45 → #46). US-03 and US-09 are completed in the same sprint so that the registration criterion involving search can be verified ([planning.md](../planning.md) §2.4).
 6. Doctors: US-02 (#55 → #56 → #57 → #58 → #59 → #60), then US-13 (#62 → #63 → #64 → #65).
 7. Staff accounts: US-14 (#15 → #16 → #17 → #18), then US-15 (#20 → #21 → #22 → #23).
 8. #217 — test and publish the same image, with the black-box journey.
 9. #219 — the test plan, at the end, so that it includes the tests of this sprint.
 10. #188 — review, retrospective and release `v0.3.0` on 2026-11-28.
 
-At the planning, the unblocked items #222, #224, #225, #216, #169, #31 (T-03.1), #55 (T-02.1), #15 (T-14.1) and #217 were moved to *Ready* (README §10.4).
+At the planning, the unblocked items #222, #224, #225, #216, #169, #31 (T-03.1), #55 (T-02.1), #15 (T-14.1) and #217 were moved to *Ready* ([github-project.md](../github-project.md) §4).
 
 ### 1.5 Decisions
 
@@ -79,8 +79,8 @@ Decisions on the findings of the Sprint 1 Review (`docs/sprints/sprint-1.md` §4
 
 Other decisions:
 
-- **Review evidence** (README §8.4): demonstrate registration, search, updates, account creation and deactivation, including denied actions for unauthorised roles.
-- **Retrospective action from Sprint 1:** before changing the board and before opening a pull request, check that the status matches README §10.4 and the WIP limits, that the pull-request text follows the pattern of the task type, and that every run number, issue number and link is copied from its source. The result is checked in the Sprint 2 retrospective (#188).
+- **Review evidence** ([planning.md](../planning.md) §2.4): demonstrate registration, search, updates, account creation and deactivation, including denied actions for unauthorised roles.
+- **Retrospective action from Sprint 1:** before changing the board and before opening a pull request, check that the status matches [github-project.md](../github-project.md) §4 and the WIP limits, that the pull-request text follows the pattern of the task type, and that every run number, issue number and link is copied from its source. The result is checked in the Sprint 2 retrospective (#188).
 
 ## 2. Work log
 
@@ -108,7 +108,8 @@ Each entry records the completed work, the next action and any blockers.
   - #229, the first promoted release: `v0.2.1-rc.1` (pre-release) and `v0.2.1`, approved in `production`, both on f4bec54 with the digest of the tested dev image (Release runs 44290421084 and 44290895319); `docs/publishing.md` documents the registry, stages, credentials, consumption, revocation, withdrawal and clean-up.
   - #230, the Lab 8 report for Tasks 0–4 (`docs/publishing-lab.md` with 18 screenshots in `docs/lab8-evidence/`), checked against `testing-demo` and `publish-demo` (releases, environments, tag rulesets, digests) and for credentials.
   - #216, the coverage gate: `.coveragerc` requires 100 % of lines and branches of `app/`, locally and in CI. Before it, the `Tests` job did not measure branches at all. Shown locally with two deliberately uncovered changes, an unexecuted line and a branch never taken, which both fail the run while all tests pass. In CI, the throw-away pull request #237 added a branch that no test takes: `Tests` failed with "Required test coverage of 100.0% not reached. Total coverage: 99.80%" although all 223 tests passed (run 44298090581), and the merge was blocked; it was closed without merging.
-- **Next:** DOC-01 #169.
+  - #169 DOC-01, the documentation restructured: `README.md` keeps the overview, a quickstart and links; its sections moved unchanged into `docs/requirements.md`, `backlog.md`, `tasks.md`, `estimation.md`, `planning.md`, `tooling.md`, `github-project.md` and `docs/development/` (running locally, testing, CI, migrations, accounts and access control, branching strategy, Git workflow), with `docs/README.md` as the index, diagrams in `docs/diagrams/` and the Lab 4 and Lab 5 notes in `docs/labs/`. Every "README §X" reference was updated; all 207 relative links and images resolve. The Lab 6–8 reports stay where they are, because their links were already submitted.
+- **Next:** US-03 (#31–#36), patient registration.
 - **Blockers:** none. A local dry run showed that `imagetools create` from an image pushed by Docker wraps it in an index with a new digest; the image is therefore pushed under an upload name first, and every name is created from that index. The first CI run of the pull request failed in `Container`: `--pull never` also applied to the PostgreSQL image, which a clean runner does not have; the local-image mode now relies on `pull_policy: never` for the application only, verified locally after removing the PostgreSQL image.
 
 ## 3. Increment

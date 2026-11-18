@@ -75,7 +75,7 @@ docker image inspect ghcr.io/ceciliagalvaoo/hospital-devops:0.2.1 \
   --format '{{index .Config.Labels "org.opencontainers.image.version"}} {{index .Config.Labels "org.opencontainers.image.revision"}}'
 ```
 
-To run a published version with its database, from a clone of the repository with a `.env` copied from `.env.example` (README §11), name the image and start the stack without building:
+To run a published version with its database, from a clone of the repository with a `.env` copied from `.env.example` ([running-locally.md](development/running-locally.md)), name the image and start the stack without building:
 
 ```bash
 export PUBLISHED_IMAGE=ghcr.io/ceciliagalvaoo/hospital-devops:0.2.1
