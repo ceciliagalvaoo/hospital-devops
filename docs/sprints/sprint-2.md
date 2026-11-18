@@ -106,7 +106,7 @@ Each entry records the completed work, the next action and any blockers.
   - #227, `docs/versioning.md` (scheme, channels, tag format, mutable and immutable names, who may release) and the version script with the channels `dev` (`X.Y.Z-dev.N` from `main`), `rc` and `release`, rejecting malformed tags and keeping `X.Y.Z-dev.*` after a release candidate.
   - #228, the image is built once and promoted: `Container` builds and smoke-tests it, `Publish` pushes that same image as `sha-<commit>`, `X.Y.Z-dev.N` and `dev`, and the new release workflow promotes it to rc or release names without building, after the approval of the new `production` environment, and creates the GitHub Release. This also fixes #224.
 - **Next:** #229, release `v0.2.1-rc.1` and `v0.2.1` and `docs/publishing.md`.
-- **Blockers:** none. A local dry run showed that `imagetools create` from an image pushed by Docker wraps it in an index with a new digest; the image is therefore pushed under an upload name first, and every name is created from that index.
+- **Blockers:** none. A local dry run showed that `imagetools create` from an image pushed by Docker wraps it in an index with a new digest; the image is therefore pushed under an upload name first, and every name is created from that index. The first CI run of the pull request failed in `Container`: `--pull never` also applied to the PostgreSQL image, which a clean runner does not have; the local-image mode now relies on `pull_policy: never` for the application only, verified locally after removing the PostgreSQL image.
 
 ## 3. Increment
 
