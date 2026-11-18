@@ -289,3 +289,25 @@ def test_error_page_title_matches_the_reason(client, accounts, case, status, hea
     assert response.status_code == status
     assert page_heading(response.text) == heading
     assert page_title(response.text) == heading
+
+
+def test_pages_and_api_responses_are_not_stored_by_the_browser(client, accounts):
+    # Reproduces #222: without no-store, Back after logout showed the cached page.
+    responses = {"login page": client.get("/login")}
+    log_in_as(client, Role.ADMINISTRATOR)
+    responses["home page"] = client.get("/")
+    responses["area page"] = client.get("/staff")
+    responses["error page"] = client.get("/records")
+    responses["API"] = client.get("/auth/me", headers={"Accept": "application/json"})
+    client.post("/logout", data={"csrf_token": form_token(client.get("/").text)})
+    responses["login page after logout"] = client.get("/")
+
+    for name, response in responses.items():
+        assert response.headers.get("cache-control") == "no-store", name
+
+
+def test_static_files_may_still_be_cached(client):
+    response = client.get("/static/styles.css")
+
+    assert response.status_code == 200
+    assert "no-store" not in response.headers.get("cache-control", "")

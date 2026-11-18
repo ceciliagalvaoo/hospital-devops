@@ -75,3 +75,17 @@ def test_protected_page_without_a_session_shows_the_login_page(page: Page, e2e_a
     assert response is not None and response.status == 401
     expect(page.get_by_role("heading", level=1)).to_have_text("Log in")
     expect(page.get_by_role("status")).to_have_text("Please log in to continue.")
+
+
+def test_back_after_logout_does_not_show_the_previous_page(page: Page, e2e_accounts):
+    # Reproduces #222: the browser showed the cached home page with the account name.
+    account = e2e_accounts[Role.ADMINISTRATOR]
+    log_in(page, account.login, account.password)
+    expect(page).to_have_url(re.compile(r"/$"))
+    page.get_by_role("button", name="Log out").click()
+    expect(page).to_have_url(re.compile(r"/login$"))
+
+    page.go_back()
+
+    expect(page.get_by_role("heading", level=1)).to_have_text("Log in")
+    expect(page.get_by_test_id("current-account")).to_have_count(0)
