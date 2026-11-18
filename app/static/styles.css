@@ -79,7 +79,7 @@ main:focus-visible {
   list-style: none;
 }
 
-.nav-list a[aria-current="page"] {
+.nav-list a[aria-current] {
   font-weight: 700;
   text-decoration: none;
 }
@@ -125,7 +125,10 @@ label {
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="date"],
+input[type="tel"],
+input[type="email"] {
   width: 100%;
   padding: 0.6rem 0.75rem;
   font: inherit;
@@ -185,4 +188,79 @@ button:hover {
 .areas p {
   margin: 0;
   color: var(--muted);
+}
+
+.patient-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 32rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.field p {
+  margin: 0;
+}
+
+.required,
+.hint {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.field-error {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.field.invalid input {
+  border: 2px solid var(--error);
+}
+
+#error-summary {
+  margin-bottom: 1rem;
+}
+
+.message h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.message ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.message.error a {
+  color: var(--error);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+}
+
+.area-actions {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.record {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.5rem;
+  max-width: 32rem;
+}
+
+.record dt {
+  font-weight: 600;
+}
+
+.record dd {
+  margin: 0;
 }

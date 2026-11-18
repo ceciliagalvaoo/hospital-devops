@@ -15,7 +15,7 @@
       <ul class="nav-list">
         <li><a href="/"{% if request.url.path == "/" %} aria-current="page"{% endif %}>Home</a></li>
         {% for area in navigation %}
-        <li><a href="{{ area.path }}"{% if request.url.path == area.path %} aria-current="page"{% endif %}>{{ area.title }}</a></li>
+        <li><a href="{{ area.path }}"{% if request.url.path == area.path %} aria-current="page"{% elif request.url.path.startswith(area.path ~ "/") %} aria-current="true"{% endif %}>{{ area.title }}</a></li>
         {% endfor %}
       </ul>
     </nav>

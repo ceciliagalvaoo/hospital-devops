@@ -53,6 +53,8 @@ The command creates the active accounts `dev.receptionist`, `dev.doctor` and `de
 | `/login` | Login form. Valid credentials redirect to the home page; wrong passwords, unknown logins and inactive accounts see the same message with HTTP 401. |
 | `/` | Home page with the logged-in account, its role and the areas of that role. |
 | `/patients`, `/doctors`, `/appointments`, `/records`, `/staff` | Areas of the application. They are placeholders until the stories that deliver them (see the table below), but already enforce the role checks. |
+| `/patients/new` | Patient registration form (US-03), for receptionists and administrators. Invalid data returns the form with HTTP 422, the entered values, a summary of the errors linked to the fields and a message next to each invalid field; the focus moves to the first invalid field. A valid patient is saved and the browser is redirected to the record. |
+| `/patients/<id>` | The patient's record: record number, date of birth, phone, e-mail and status, with a confirmation after registration. Unknown records return "Page not found" with HTTP 404. |
 | Log out button | Ends the session (`POST /logout`) and returns to the login page. |
 
 The navigation shows each role only the areas allowed by the RBAC matrix ([requirements.md](../requirements.md) §2.2); `app/navigation.py` holds this table and is used both for the links and for the access checks of the area pages:
@@ -65,7 +67,7 @@ The navigation shows each role only the areas allowed by the RBAC matrix ([requi
 | Medical records | No | Yes | No | US-06, US-07, US-08, US-18 |
 | Staff accounts | No | No | Yes | US-14, US-15 |
 
-**Register a patient** through the API (US-03); the registration page follows in #33. Only receptionists and administrators may register patients; doctors receive HTTP 403 and requests without a session HTTP 401:
+**Register a patient** through the API (US-03), with the same rules as the `/patients/new` page. Only receptionists and administrators may register patients; doctors receive HTTP 403 and requests without a session HTTP 401:
 
 | Endpoint | Behaviour |
 | --- | --- |

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.full_name }}{% endblock %}
+{% block content %}
+{% if registered %}
+<p class="message notice" role="status">Patient registered with record number {{ patient.record_number }}.</p>
+{% endif %}
+<h1>{{ patient.full_name }}</h1>
+<dl class="card record">
+  <dt>Record number</dt>
+  <dd data-testid="record-number">{{ patient.record_number }}</dd>
+  <dt>Date of birth</dt>
+  <dd>{{ patient.date_of_birth.isoformat() }}</dd>
+  <dt>Phone</dt>
+  <dd>{{ patient.phone or "Not given" }}</dd>
+  <dt>E-mail</dt>
+  <dd>{{ patient.email or "Not given" }}</dd>
+  <dt>Status</dt>
+  <dd>{{ "Active" if patient.is_active else "Inactive" }}</dd>
+</dl>
+<p class="actions"><a href="/patients/new">Register another patient</a> <a href="/patients">Back to patients</a></p>
+{% endblock %}
