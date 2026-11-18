@@ -1,44 +1,27 @@
 """End-to-end test of US-03 in a browser: register a patient and see the saved record (T-03.5).
 
-Synthetic data only. Each run uses a unique patient name and deletes its patients afterwards,
-because the live server commits to the test database.
+Synthetic data only. The ``patient_name`` fixture gives each test a unique name and deletes
+its patients afterwards, because the live server commits to the test database.
 """
 
 import re
-import uuid
 
 import pytest
 from playwright.sync_api import Page, expect
-from sqlalchemy import delete, func, select
+from sqlalchemy import func, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.models import Patient, Role
 from app.patients import MESSAGES
+from tests.e2e.browser import log_in
 
 pytestmark = pytest.mark.e2e
-
-
-@pytest.fixture
-def patient_name(db_engine: Engine):
-    name = f"E2E Synthetic Patient {uuid.uuid4().hex[:8]}"
-    yield name
-    with Session(db_engine) as session:
-        session.execute(delete(Patient).where(Patient.full_name == name))
-        session.commit()
 
 
 def saved_with_name(db_engine: Engine, name: str) -> int:
     with Session(db_engine) as session:
         return session.scalar(select(func.count()).where(Patient.full_name == name))
-
-
-def log_in(page: Page, account) -> None:
-    page.goto("/login")
-    page.get_by_label("Login", exact=True).fill(account.login)
-    page.get_by_label("Password", exact=True).fill(account.password)
-    page.get_by_role("button", name="Log in").click()
-    page.wait_for_url("**/")
 
 
 def focused_field(page: Page) -> str:
