@@ -1,6 +1,9 @@
-"""Compute the version, the channel and the tags of an image published by CI.
+"""Compute the version, the channel and the image names of a CI build.
 
-Used by the Publish job of .github/workflows/ci.yml. The rules are in docs/versioning.md.
+Used by .github/workflows/ci.yml (dev channel) and release.yml (rc and release channels).
+The rules are in docs/versioning.md. Every tested build of ``main`` is pushed once as
+``sha-<commit>``; the names returned in ``tags`` are then added to that same image, so a
+promotion never rebuilds and never changes the commit tag (#224, #228).
 
 Channels:
 
@@ -43,7 +46,8 @@ class Tag(NamedTuple):
 class ImageMetadata(NamedTuple):
     version: str
     channel: str
-    tags: list[str]
+    tags: list[str]  # names added to the tested image of the commit
+    commit_tag: str  # the immutable name of that tested image
 
 
 def parse_tag(name: str) -> Tag | None:
@@ -84,7 +88,7 @@ def image_metadata(ref: str, sha: str, tag_names: list[str], run_number: str) ->
         if not run_number.isdigit():
             raise ValueError(f"Expected a workflow run number, got {run_number!r}.")
         version = next_dev_version(latest_tag(tag_names), int(run_number))
-        return ImageMetadata(version, "dev", ["main", commit_tag])
+        return ImageMetadata(version, "dev", [version, "dev"], commit_tag)
 
     tag = parse_tag(ref.removeprefix("refs/tags/")) if ref.startswith("refs/tags/") else None
     if tag is None:
@@ -94,9 +98,9 @@ def image_metadata(ref: str, sha: str, tag_names: list[str], run_number: str) ->
         )
     if tag.rc is not None:
         version = f"{tag.release}-rc.{tag.rc}"
-        return ImageMetadata(version, "rc", [version, "rc"])
+        return ImageMetadata(version, "rc", [version, "rc"], commit_tag)
     minor_line = f"{tag.major}.{tag.minor}"
-    return ImageMetadata(tag.release, "release", [tag.release, minor_line, "latest", commit_tag])
+    return ImageMetadata(tag.release, "release", [tag.release, minor_line, "latest"], commit_tag)
 
 
 def main() -> None:  # pragma: no cover - runs in the CI job
@@ -116,6 +120,7 @@ def main() -> None:  # pragma: no cover - runs in the CI job
         f"version={metadata.version}",
         f"channel={metadata.channel}",
         f"tags={' '.join(metadata.tags)}",
+        f"commit_tag={metadata.commit_tag}",
     ]
     with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
         output.write("\n".join(lines) + "\n")
