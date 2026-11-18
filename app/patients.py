@@ -1,4 +1,4 @@
-"""Patient registration rules (US-03), shared by the JSON API and the pages.
+"""Patient registration (US-03) and search (US-09) rules, shared by the JSON API and the pages.
 
 Only the name and the date of birth are required. The phone and e-mail are optional, but
 must be well formed when given. Every invalid field is reported, so a form can mark all of
@@ -9,6 +9,7 @@ import re
 from dataclasses import asdict, dataclass
 from datetime import date
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import Patient
@@ -112,3 +113,67 @@ def register_patient(db: Session, details: PatientDetails) -> Patient:
     db.add(patient)
     db.commit()
     return patient
+
+
+# ---------------------------------------------------------------- search (US-09)
+
+SEARCH_LIMIT = 50
+NAME_SEARCH_MIN_LENGTH = 2
+RECORD_NUMBER = re.compile(r"^(?:P-?)?0*(\d+)$", re.IGNORECASE)
+SEARCH_MESSAGES = {
+    "empty": "Enter a name or a record number to search.",
+    "too_short": f"Enter at least {NAME_SEARCH_MIN_LENGTH} characters of the name.",
+}
+
+
+class InvalidSearch(ValueError):
+    """The search query cannot be used; ``message`` says what to enter instead."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+@dataclass(frozen=True)
+class SearchQuery:
+    record_id: int | None  # set when the query is a record number such as P-000042
+    words: tuple[str, ...]  # otherwise the words that every matching name contains
+
+
+@dataclass(frozen=True)
+class SearchResult:
+    patients: list[Patient]
+    more: bool  # True when more than SEARCH_LIMIT patients match
+
+
+def parse_search(query: str | None) -> SearchQuery:
+    """Read a query as a record number (P-000042, P42 or 42) or as words of the name."""
+    text = " ".join((query or "").split())
+    if not text:
+        raise InvalidSearch(SEARCH_MESSAGES["empty"])
+    record = RECORD_NUMBER.match(text)
+    if record:
+        return SearchQuery(int(record.group(1)), ())
+    if len(text) < NAME_SEARCH_MIN_LENGTH:
+        raise InvalidSearch(SEARCH_MESSAGES["too_short"])
+    return SearchQuery(None, tuple(text.split(" ")))
+
+
+def _contains(word: str) -> str:
+    """A LIKE pattern that matches the word literally, with % and _ escaped."""
+    escaped = word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
+def search_patients(db: Session, query: str | None) -> SearchResult:
+    """Patients whose record number equals the query, or whose name contains every word of
+    it, ignoring case; active and inactive patients, ordered by name."""
+    search = parse_search(query)
+    statement = select(Patient).order_by(func.lower(Patient.full_name), Patient.id)
+    if search.record_id is not None:
+        statement = statement.where(Patient.id == search.record_id)
+    else:
+        for word in search.words:
+            statement = statement.where(Patient.full_name.ilike(_contains(word), escape="\\"))
+    found = list(db.scalars(statement.limit(SEARCH_LIMIT + 1)))
+    return SearchResult(found[:SEARCH_LIMIT], len(found) > SEARCH_LIMIT)
