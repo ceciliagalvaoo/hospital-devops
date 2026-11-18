@@ -131,7 +131,7 @@ Login (`POST /login` or `/auth/login`) checks the password with bcrypt, also for
 flowchart LR
     pr["Pull request"] --> checks
     push["Push to main<br/>(merged pull request)"] --> checks
-    tag["Release tag vX.Y.Z"] --> checks
+    tag["Version tag vX.Y.Z or vX.Y.Z-rc.N"] --> promote
     subgraph checks["Required checks"]
         lint["Lint<br/>Ruff"]
         tests["Tests<br/>pytest + PostgreSQL"]
@@ -139,12 +139,14 @@ flowchart LR
         container["Container<br/>build + smoke tests"]
     end
     checks -- "pull request: merge allowed<br/>when all pass and branch up to date" --> merge["Merge commit<br/>into main"]
-    checks -- "main or release tag<br/>and all passed" --> publish["Publish<br/>build + push to GHCR"]
+    checks -- "main and all passed" --> publish["Publish<br/>push the tested image<br/>sha + dev names"]
     publish --> verify["Verify image<br/>anonymous pull + checks"]
+    promote["Release workflow: Promote<br/>add rc or release names<br/>(production needs approval)"] -- "sha-commit image" --> ghcr[("GHCR")]
+    publish --> ghcr
 ```
 
 - **Pull requests** run `Lint`, `Tests`, `E2E` and `Container`, which are required checks of the ruleset on `main`, together with an up-to-date branch and merge commits only (`docs/branching-strategy.md` §3 and §7). Failed end-to-end tests keep screenshots, videos and traces as the `playwright-results` artifact.
-- **Pushes to `main`** run the same checks and then `Publish`, the only job with permission to write packages: it pushes `main` and `sha-<commit>` with the version and commit as labels. **Release tags** `vX.Y.Z` (one per sprint) also publish `X.Y.Z`, `X.Y` and `latest` (`docs/docker-build.md`, "Versioning and image tags").
+- **Pushes to `main`** run the same checks; `Container` builds the image once and smoke-tests it, and `Publish` pushes that tested image as `sha-<commit>`, `X.Y.Z-dev.N` and `dev` (one digest). **Version tags** run the release workflow, which never builds: it promotes the tested image of the tagged commit to `X.Y.Z-rc.N` and `rc`, or, after the approval of the `production` environment, to `X.Y.Z`, `X.Y` and `latest`, and creates the GitHub Release (`docs/docker-build.md`, "Versioning and image tags"; `docs/versioning.md`).
 - **Verify image** then pulls the `sha-<commit>` tag without credentials, starts it with PostgreSQL and checks health, the login page, the non-root user and the labels.
 
 ## 6. Tests

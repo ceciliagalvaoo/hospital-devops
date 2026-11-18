@@ -53,26 +53,30 @@ docker build --target build -t hospital-devops:build .
 
 ## Versioning and image tags
 
-Published images are built and pushed by the `Publish` job of the CI workflow (`.github/workflows/ci.yml`) to `ghcr.io/ceciliagalvaoo/hospital-devops`. The job runs only after `Lint`, `Tests`, `E2E` and `Container` passed on the same commit, and `scripts/image_metadata.py` computes the version and the tags:
+The image is **built once and promoted**: the image that passed the checks of a commit is the image that every channel names. The rules (channels, tag format, who may release) are in [versioning.md](versioning.md); `scripts/image_metadata.py` computes the version and the names.
 
-| Event | Image tags | `org.opencontainers.image.version` |
-| --- | --- | --- |
-| Push to `main` (a merged pull request) | `main`, `sha-<commit>` | the next development version, for example `0.3.0-dev.57`: the version after the latest tag, numbered by the CI run ([versioning.md](versioning.md) §2) |
-| Push of a release tag `vX.Y.Z` | `X.Y.Z`, `X.Y`, `latest`, `sha-<commit>` | `X.Y.Z` |
+| Event | Workflow and job | What happens | Names | `org.opencontainers.image.version` |
+| --- | --- | --- | --- | --- |
+| Pull request | CI | built and tested, never published | — | `0.0.0` |
+| Push to `main` (a merged pull request) | CI: `Container`, then `Publish` | `Container` builds the image once and runs the smoke tests against it; after the four required checks passed, `Publish` pushes that same image and names it | `sha-<commit>`, `X.Y.Z-dev.N`, `dev` | `X.Y.Z-dev.N`, for example `0.3.0-dev.72` |
+| Tag `vX.Y.Z-rc.N` | Release: `Promote` (environment `test`) | adds names to the tested image of the tagged commit, without building | `X.Y.Z-rc.N`, `rc` | unchanged: the dev version of the build |
+| Tag `vX.Y.Z` | Release: `Promote` (environment `production`, after approval) | the same promotion | `X.Y.Z`, `X.Y`, `latest` | unchanged: the dev version of the build |
 
 `<commit>` is the first seven characters of the commit SHA, and `org.opencontainers.image.revision` always holds the full SHA, so every published image can be traced to its source commit.
 
-- **Immutable tags:** `sha-<commit>` and `X.Y.Z` always refer to the same image. A release tag is never moved (`docs/branching-strategy.md` §4), so `X.Y.Z` is published once.
-- **Moving tags:** `main` follows the latest merged commit; `X.Y` follows the latest patch release of a minor version; `latest` follows the latest release, never an unreleased commit of `main`.
-- **Releases** follow semantic versioning (`docs/branching-strategy.md` §4); there is one release per sprint (`v0.2.0` at the end of Sprint 1). A release tag must have the form `vMAJOR.MINOR.PATCH` and point to a commit on `main`; otherwise the `Publish` job fails and nothing is published. The `Tag and push` step pushes the tags one after the other, so a failure part-way leaves the earlier tags published.
-- **Pull requests and manual runs** never publish; the `Publish` job is skipped for them, and it is the only job with permission to write packages.
-- **Verification:** after each publication, the `Verify image` job pulls the `sha-<commit>` tag anonymously, starts it with PostgreSQL and checks `/health`, the login page, the non-root user and the `source`, `revision` and `version` labels (`pytest -m published`, README §11).
+- **One digest in every channel.** `Publish` pushes the tested image under the upload name `build-<commit>` and then creates `sha-<commit>` and the dev names from it with `docker buildx imagetools create`, which wraps the pushed manifest once in an index. Every promotion copies that index unchanged, so `sha-<commit>`, `X.Y.Z-dev.N`, `X.Y.Z-rc.N`, `X.Y.Z` and `latest` of one commit share one digest; both workflows check it and fail otherwise.
+- **The version label is the build's version.** A promoted image keeps the label of the dev build (for example `0.3.0-dev.72` inside the image named `0.2.1`), because the label is part of the tested bytes; changing it would mean a rebuild. The release name lives in the registry, and the commit in the `revision` label links both.
+- **Immutable names:** `sha-<commit>`, `build-<commit>` and every exact version. **Moving names:** `dev`, `rc`, `X.Y` and `latest`. The former moving tag `main` is no longer updated since #228; `dev` replaces it.
+- **No tested image, no release.** `Promote` fails with "No tested image … for commit …" when the tagged commit has no `sha-<commit>` image, that is, when it never passed the CI workflow on `main`.
+- **Pull requests and manual runs** never publish. Only `Publish` (CI) and `Promote` (Release) may write packages, and only the `GitHub Release` job may write to the repository, to create the release with generated notes.
+- **Verification:** after each publication from `main`, the `Verify image` job pulls the `sha-<commit>` tag anonymously, starts it with PostgreSQL and checks `/health`, the login page, the non-root user and the `source`, `revision` and `version` labels (`pytest -m published`, README §11).
 
-To run a specific build, use its immutable tag or its digest, which the run summary of the `Publish` job records:
+To run a specific build, use an exact name or the digest that the run summary records:
 
 ```bash
-docker pull ghcr.io/ceciliagalvaoo/hospital-devops:sha-437b1b4
-docker image inspect ghcr.io/ceciliagalvaoo/hospital-devops:sha-437b1b4 \
+docker pull ghcr.io/ceciliagalvaoo/hospital-devops:sha-b889650
+docker buildx imagetools inspect ghcr.io/ceciliagalvaoo/hospital-devops:sha-b889650   # digest
+docker image inspect ghcr.io/ceciliagalvaoo/hospital-devops:sha-b889650 \
   --format '{{index .Config.Labels "org.opencontainers.image.version"}} {{index .Config.Labels "org.opencontainers.image.revision"}}'
 ```
 
