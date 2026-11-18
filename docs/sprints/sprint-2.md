@@ -103,7 +103,8 @@ Each entry records the completed work, the next action and any blockers.
 - **Done:**
   - #222, every response except the static files is sent with `Cache-Control: no-store`, so Back after logout shows the login page.
   - #225, the API documentation (`/docs`, `/redoc`, `/openapi.json`) is served only with `APP_ENV=development`; the published image returns HTTP 404 for it. The application is now created by `create_app()`.
-- **Next:** #227, versioning rules and channel versions (Lab 8).
+  - #227, `docs/versioning.md` (scheme, channels, tag format, mutable and immutable names, who may release) and the version script with the channels `dev` (`X.Y.Z-dev.N` from `main`), `rc` and `release`, rejecting malformed tags and keeping `X.Y.Z-dev.*` after a release candidate.
+- **Next:** #228, build once and promote the image (Lab 8).
 - **Blockers:** none.
 
 ## 3. Increment

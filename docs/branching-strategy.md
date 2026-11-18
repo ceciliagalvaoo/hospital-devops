@@ -90,7 +90,7 @@ git fetch --prune
 
 ## 4. Release rules
 
-- **Version numbering.** Releases follow semantic versioning, `vMAJOR.MINOR.PATCH`:
+- **Version numbering.** Releases follow semantic versioning, `vMAJOR.MINOR.PATCH`, with release candidates `vMAJOR.MINOR.PATCH-rc.N`; the channels and the full rules are in [versioning.md](versioning.md):
   - **MAJOR:** incompatible changes in behaviour or interfaces that users or integrations rely on;
   - **MINOR:** new functionality that stays compatible, for example a new user story delivered;
   - **PATCH:** compatible bug fixes only.
