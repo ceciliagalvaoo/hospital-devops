@@ -9,7 +9,7 @@ from starlette.responses import Response
 
 from app.access import NOT_PERMITTED
 from app.csrf import CROSS_ORIGIN, INVALID_TOKEN, csrf_protect
-from app.routes import auth, health, pages
+from app.routes import auth, health, pages, patients
 from app.templating import render, wants_html
 
 # Title and message of the browser error page for each API detail text, so that the
@@ -74,6 +74,7 @@ def create_app() -> FastAPI:
     application.include_router(health.router)
     application.include_router(auth.router)
     application.include_router(pages.router)
+    application.include_router(patients.router)
     application.middleware("http")(do_not_store_responses)
     application.add_exception_handler(StarletteHTTPException, page_errors)
     return application

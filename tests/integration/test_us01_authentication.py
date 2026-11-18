@@ -25,6 +25,7 @@ HTML = {"Accept": "text/html"}
 # Every state-changing route of the application. A new POST route must be added here
 # (test_every_state_changing_route_is_listed fails otherwise).
 STATE_CHANGING_ROUTES = [
+    ("POST", "/api/patients"),
     ("POST", "/auth/login"),
     ("POST", "/auth/logout"),
     ("POST", "/login"),
@@ -136,7 +137,9 @@ def test_every_state_changing_route_accepts_a_valid_token(client, account, metho
         follow_redirects=False,
     )
 
-    assert response.status_code in {200, 204, 303}
+    # The token passes the CSRF check. A route that needs a session then answers 401
+    # (no one is logged in here), but never the CSRF refusal (403).
+    assert response.status_code in {200, 204, 303, 401}
 
 
 def test_every_state_changing_route_is_listed():
