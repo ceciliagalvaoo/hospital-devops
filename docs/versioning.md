@@ -1,6 +1,6 @@
 # Versioning
 
-This document defines how the artifact of `hospital-devops` is versioned (Lab 8, Task 5, #227). The artifact is the application's container image, `ghcr.io/ceciliagalvaoo/hospital-devops`; how it is built, published and consumed is described in [docker-build.md](docker-build.md) and, from #229 on, in `publishing.md`.
+This document defines how the artifact of `hospital-devops` is versioned (Lab 8, Task 5, #227). The artifact is the application's container image, `ghcr.io/ceciliagalvaoo/hospital-devops`; how it is built, published and consumed is described in [docker-build.md](docker-build.md) and how it is published, consumed and withdrawn in [publishing.md](publishing.md).
 
 ## 1. Scheme
 
@@ -20,7 +20,7 @@ Pre-releases sort **before** their release, and their numeric parts compare as n
 
 | Channel | Created by | Version | Who uses it | Kept |
 | --- | --- | --- | --- | --- |
-| **dev** | every push to `main` that passes the required checks | `X.Y.Z-dev.N`: the next version after the latest tag, numbered by the CI run, for example `0.3.0-dev.57` | development, the Sprint Review demonstration | short: a clean-up policy is defined in `publishing.md` |
+| **dev** | every push to `main` that passes the required checks | `X.Y.Z-dev.N`: the next version after the latest tag, numbered by the CI run, for example `0.3.0-dev.57` | development, the Sprint Review demonstration | short: see the clean-up policy in [publishing.md](publishing.md) §8 |
 | **rc** | a tag `vX.Y.Z-rc.N` | `X.Y.Z-rc.N`, for example `0.2.1-rc.1` | acceptance testing before a release | until the release |
 | **release** | a tag `vX.Y.Z` | `X.Y.Z` | everyone who runs the application | forever |
 
