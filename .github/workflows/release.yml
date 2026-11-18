@@ -1,0 +1,106 @@
+name: Release
+
+# A release is a decision, and the decision is a git tag. This workflow never builds: it
+# promotes the image that the CI workflow built and tested for the tagged commit by adding
+# the rc or release names to it (docs/versioning.md, Lab 8, #228).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: ghcr.io/ceciliagalvaoo/hospital-devops
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      channel: ${{ steps.meta.outputs.channel }}
+      tags: ${{ steps.meta.outputs.tags }}
+      commit_tag: ${{ steps.meta.outputs.commit_tag }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Rejects any tag that is not vX.Y.Z or vX.Y.Z-rc.N.
+      - name: Compute version, channel and image names
+        id: meta
+        run: python3 scripts/image_metadata.py
+
+  promote:
+    name: Promote
+    needs: version
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Releases wait for the approval of the production environment; release candidates
+    # use the test environment.
+    environment: ${{ needs.version.outputs.channel == 'release' && 'production' || 'test' }}
+    permissions:
+      contents: read
+      packages: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      TAGS: ${{ needs.version.outputs.tags }}
+      COMMIT_TAG: ${{ needs.version.outputs.commit_tag }}
+    steps:
+      - name: Log in to GitHub Container Registry
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: The tagged commit must already have a tested image
+        run: |
+          if ! docker buildx imagetools inspect "$IMAGE_NAME:$COMMIT_TAG" > /dev/null 2>&1; then
+            echo "::error::No tested image $IMAGE_NAME:$COMMIT_TAG for commit $GITHUB_SHA. Tag a commit of main that passed the CI workflow."
+            exit 1
+          fi
+
+      - name: Promote the tested image (no rebuild)
+        run: |
+          args=()
+          for tag in $TAGS; do args+=(--tag "$IMAGE_NAME:$tag"); done
+          docker buildx imagetools create "${args[@]}" "$IMAGE_NAME:$COMMIT_TAG"
+
+      - name: Check that every name has the digest of the tested image
+        run: |
+          digest() { docker buildx imagetools inspect "$IMAGE_NAME:$1" | awk '/^Digest:/ {print $2}'; }
+          expected="$(digest "$COMMIT_TAG")"
+          for tag in $TAGS; do
+            test "$(digest "$tag")" = "$expected" || { echo "::error::$tag does not match $COMMIT_TAG"; exit 1; }
+          done
+          {
+            echo "### Promoted image"
+            echo
+            echo "- Image: \`$IMAGE_NAME\`"
+            echo "- Version: \`$VERSION\`"
+            echo "- Names: \`$TAGS\` (from \`$COMMIT_TAG\`)"
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Digest: $expected"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  github-release:
+    name: GitHub Release
+    needs: [version, promote]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # the only job that may write to the repository
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CHANNEL: ${{ needs.version.outputs.channel }}
+    steps:
+      - name: Create the GitHub Release with generated notes
+        run: |
+          flags=(--repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes)
+          if [ "$CHANNEL" = "rc" ]; then flags+=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" "${flags[@]}"
