@@ -1,4 +1,5 @@
-"""Patient registration (US-03) and search (US-09) rules, shared by the JSON API and the pages.
+"""Patient registration (US-03), search (US-09) and contact update (US-10) rules, shared by
+the JSON API and the pages.
 
 Only the name and the date of birth are required. The phone and e-mail are optional, but
 must be well formed when given. Every invalid field is reported, so a form can mark all of
@@ -92,19 +93,50 @@ def validate_patient(
     if birth_error:
         errors["date_of_birth"] = birth_error
 
+    (phone_number, email_address), contact_errors = _contacts(phone, email)
+    errors |= contact_errors
+
+    if errors:
+        raise InvalidPatient(errors)
+    return PatientDetails(name, born, phone_number, email_address)
+
+
+def _contacts(phone: str | None, email: str | None) -> tuple[tuple[str | None, str | None], dict]:
+    """The cleaned phone and e-mail (None when blank) and the errors of the malformed ones.
+    Registration and contact updates share these rules."""
+    errors: dict[str, str] = {}
     phone_number = _optional(phone)
     if phone_number and not (
         PHONE.match(phone_number) and sum(c.isdigit() for c in phone_number) in PHONE_DIGITS
     ):
         errors["phone"] = MESSAGES["phone_invalid"]
-
     email_address = _optional(email)
     if email_address and (len(email_address) > EMAIL_MAX_LENGTH or not EMAIL.match(email_address)):
         errors["email"] = MESSAGES["email_invalid"]
+    return (phone_number, email_address), errors
 
+
+@dataclass(frozen=True)
+class ContactDetails:
+    phone: str | None
+    email: str | None
+
+
+def validate_contacts(phone: str | None, email: str | None) -> ContactDetails:
+    """Return the cleaned contact details, or raise InvalidPatient listing every bad field.
+    A blank field removes that contact: both are optional."""
+    (phone_number, email_address), errors = _contacts(phone, email)
     if errors:
         raise InvalidPatient(errors)
-    return PatientDetails(name, born, phone_number, email_address)
+    return ContactDetails(phone_number, email_address)
+
+
+def update_contacts(db: Session, patient: Patient, contacts: ContactDetails) -> Patient:
+    """Replace the patient's phone and e-mail and save them."""
+    patient.phone = contacts.phone
+    patient.email = contacts.email
+    db.commit()
+    return patient
 
 
 def register_patient(db: Session, details: PatientDetails) -> Patient:
