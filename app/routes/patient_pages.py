@@ -1,5 +1,5 @@
 """Patient pages: the patients area with search (US-09), the registration form and the
-patient's record (US-03).
+patient's record (US-03), and the contact-edit form (US-10).
 
 Receptionists and administrators only, like the API (docs/requirements.md §2.2). The form
 applies the rules of app/patients.py, so the pages and the API accept exactly the same data.
@@ -21,6 +21,8 @@ from app.patients import (
     InvalidSearch,
     register_patient,
     search_patients,
+    update_contacts,
+    validate_contacts,
     validate_patient,
 )
 from app.templating import render
@@ -98,6 +100,13 @@ def registration_submit(
     )
 
 
+def _patient_or_404(db: DbSession, patient_id: int) -> Patient:
+    patient = db.get(Patient, patient_id)
+    if patient is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not Found")
+    return patient
+
+
 @router.get("/patients/{patient_id:int}")
 def patient_record(
     request: Request,
@@ -105,10 +114,54 @@ def patient_record(
     account: PatientStaff,
     patient_id: int,
     registered: bool = False,
+    updated: bool = False,
 ) -> Response:
-    patient = db.get(Patient, patient_id)
-    if patient is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not Found")
+    context = {
+        "patient": _patient_or_404(db, patient_id),
+        "registered": registered,
+        "updated": updated,
+    }
+    return render(request, "patient.html", context, account=account)
+
+
+def _contacts_form(request, account, patient, values, errors, status_code=status.HTTP_200_OK):
+    context = {"patient": patient, "values": values, "errors": errors}
     return render(
-        request, "patient.html", {"patient": patient, "registered": registered}, account=account
+        request, "patient_contacts.html", context, account=account, status_code=status_code
     )
+
+
+@router.get("/patients/{patient_id:int}/contacts")
+def contacts_form(
+    request: Request, db: DbSession, account: PatientStaff, patient_id: int
+) -> Response:
+    patient = _patient_or_404(db, patient_id)
+    values = {"phone": patient.phone or "", "email": patient.email or ""}
+    return _contacts_form(request, account, patient, values, {})
+
+
+@router.post("/patients/{patient_id:int}/contacts")
+def contacts_submit(
+    request: Request,
+    db: DbSession,
+    account: PatientStaff,
+    patient_id: int,
+    phone: Annotated[str, Form()] = "",
+    email: Annotated[str, Form()] = "",
+) -> Response:
+    patient = _patient_or_404(db, patient_id)
+    try:
+        contacts = validate_contacts(phone, email)
+    except InvalidPatient as invalid:
+        values = {"phone": phone, "email": email}
+        return _contacts_form(
+            request,
+            account,
+            patient,
+            values,
+            invalid.errors,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+        )
+    update_contacts(db, patient, contacts)
+    # Post/Redirect/Get, as for registration: a reload never submits the form again.
+    return RedirectResponse(f"/patients/{patient.id}?updated=1", status.HTTP_303_SEE_OTHER)

@@ -3,13 +3,15 @@
 {% block content %}
 {% if registered %}
 <p class="message notice" role="status">Patient registered with record number {{ patient.record_number }}.</p>
+{% elif updated %}
+<p class="message notice" role="status">Contact details saved.</p>
 {% endif %}
 <h1>{{ patient.full_name }}</h1>
 <dl class="card record">
   <dt>Record number</dt>
-  <dd data-testid="record-number">{{ patient.record_number }}</dd>
+  <dd class="nowrap" data-testid="record-number">{{ patient.record_number }}</dd>
   <dt>Date of birth</dt>
-  <dd>{{ patient.date_of_birth.isoformat() }}</dd>
+  <dd class="nowrap">{{ patient.date_of_birth.isoformat() }}</dd>
   <dt>Phone</dt>
   <dd>{{ patient.phone or "Not given" }}</dd>
   <dt>E-mail</dt>
@@ -17,5 +19,5 @@
   <dt>Status</dt>
   <dd>{{ "Active" if patient.is_active else "Inactive" }}</dd>
 </dl>
-<p class="actions"><a href="/patients/new">Register another patient</a> <a href="/patients">Back to patients</a></p>
+<p class="actions"><a href="/patients/{{ patient.id }}/contacts">Edit contact details</a> <a href="/patients/new">Register another patient</a> <a href="/patients">Back to patients</a></p>
 {% endblock %}

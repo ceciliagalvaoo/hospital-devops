@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_form.html" import field, error_summary %}
+{% block title %}{% if errors %}Error: {% endif %}Edit contact details{% endblock %}
+{% block content %}
+<h1>Edit contact details</h1>
+<p>{{ patient.full_name }}, record number {{ patient.record_number }}</p>
+{{ error_summary(errors, "The contact details were not saved. Check these fields:") }}
+{% set first_error = (errors | list | first) if errors else "phone" %}
+<form class="card patient-form" method="post" action="/patients/{{ patient.id }}/contacts" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {{ field("phone", "Phone", "tel", values, errors, hint="Optional. 8 to 15 digits, for example +55 11 91234-5678. Leave empty to remove it.", autofocus=first_error == "phone") }}
+  {{ field("email", "E-mail", "email", values, errors, hint="Optional. Leave empty to remove it.", autofocus=first_error == "email") }}
+  <div class="actions">
+    <button type="submit">Save contact details</button>
+    <a href="/patients/{{ patient.id }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

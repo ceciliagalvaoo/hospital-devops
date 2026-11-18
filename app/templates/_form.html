@@ -1,0 +1,27 @@
+{# Form macros shared by the patient forms: labelled fields with their hint and error, and
+   the error summary linked to the fields. #}
+{% macro field(name, label, type, values, errors, hint=None, required=False, autofocus=False, attrs="") %}
+<div class="field{% if errors[name] %} invalid{% endif %}">
+  <label for="{{ name }}">{{ label }}{% if required %} <span class="required">(required)</span>{% endif %}</label>
+  {% if hint %}<p class="hint" id="{{ name }}-hint">{{ hint }}</p>{% endif %}
+  {% if errors[name] %}<p class="field-error" id="{{ name }}-error">{{ errors[name] }}</p>{% endif %}
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}" autocomplete="off"
+    {%- if required %} aria-required="true"{% endif %}
+    {%- if errors[name] %} aria-invalid="true"{% endif %}
+    {%- if hint or errors[name] %} aria-describedby="{% if hint %}{{ name }}-hint{% endif %}{% if hint and errors[name] %} {% endif %}{% if errors[name] %}{{ name }}-error{% endif %}"{% endif %}
+    {%- if autofocus %} autofocus{% endif %} {{ attrs | safe }}>
+</div>
+{% endmacro %}
+
+{% macro error_summary(errors, heading) %}
+{% if errors %}
+<div class="message error" role="alert" id="error-summary">
+  <h2>{{ heading }}</h2>
+  <ul>
+    {% for name, message in errors.items() %}
+    <li><a href="#{{ name }}">{{ message }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endmacro %}
