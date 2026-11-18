@@ -50,7 +50,9 @@ class ComposeStack:
     IMAGE_SOURCES = {
         "build": ("--build",),  # build the image from the Dockerfile
         "pull": ("--no-build", "--pull", "always"),  # pull a published image
-        "local": ("--no-build", "--pull", "never"),  # use an image already loaded locally
+        # Use an image already loaded locally: compose.local-image.yml sets pull_policy: never
+        # for the application only, so the database image is still pulled when missing.
+        "local": ("--no-build",),
     }
 
     def up(self, check: bool = True) -> subprocess.CompletedProcess[str]:
