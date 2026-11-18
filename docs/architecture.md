@@ -82,9 +82,19 @@ erDiagram
         timestamptz created_at "default now()"
         timestamptz expires_at "created_at + 8 hours"
     }
+    patients {
+        integer id PK "shown as record number P-000042"
+        varchar_120 full_name "required, not blank (check constraint)"
+        date date_of_birth "required"
+        varchar_32 phone "optional"
+        varchar_254 email "optional"
+        boolean is_active "default true; deactivated, never deleted"
+        timestamptz created_at "default now()"
+    }
 ```
 
 - **Staff accounts** are the only users; patients are data, not users ([requirements.md](requirements.md) §2.1). The role is stored as text with a check constraint (`native_enum=False`), so new roles need no PostgreSQL enum migration.
+- **Patients** hold administrative data only, never clinical notes. Only the name and the date of birth are required (US-03); the contact details are an optional phone and e-mail. The identifier used by staff and by patient search (US-09) is the **record number** `P-` followed by the id with six digits, derived from the id assigned by the database, so it is unique, never changes and needs no column; no national document number is collected (data minimisation). Both choices were made by the Product Owner on 2026-11-18 (#31). Patients are deactivated instead of deleted, so their history remains (US-17).
 - **Sessions** are stored server-side, so logout and deactivation take effect immediately. Only a hash of the random cookie token is stored; a database leak does not reveal usable tokens.
 - **Migrations** are the only way to change the schema. Constraint names follow a fixed naming convention (`pk_`, `uq_`, `ck_`, `fk_`, `ix_` in `app/db.py`), so migrations are reviewable and reversible. A test compares the models with the migrations (`alembic check` equivalent) and every revision is applied and rolled back in the test database.
 
