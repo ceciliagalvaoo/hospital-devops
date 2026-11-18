@@ -1,6 +1,6 @@
 # US-23 manual checks
 
-Manual test case of T-23.6 (#143): verify with a test pull request that failed required checks prevent merging into `main`. It checks the ruleset configured in #141 (`docs/branching-strategy.md` §3 and §7) from the point of view of the person who merges.
+Manual test case of T-23.6 (#143): verify with a test pull request that failed required checks prevent merging into `main`. It checks the ruleset configured in #141 (`docs/development/branching-strategy.md` §3 and §7) from the point of view of the person who merges.
 
 ## Run
 

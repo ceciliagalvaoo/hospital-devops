@@ -18,7 +18,7 @@ Result values: **Pass**, or **Fail** with a link to the defect issue.
 
 ## Preparation
 
-1. Start the stack and seed the accounts (README §11):
+1. Start the stack and seed the accounts ([running-locally.md](../development/running-locally.md)):
 
    ```bash
    docker compose up -d --build

@@ -1,6 +1,6 @@
 # Branching strategy
 
-This document defines the branching strategy for `hospital-devops` (Lab 5, Task 6, #167). It builds on the workflow already practised in Lab 4 and recorded in [git-workflow.md](git-workflow.md), and on the branch naming convention in README §10.7.
+This document defines the branching strategy for `hospital-devops` (Lab 5, Task 6, #167). It builds on the workflow already practised in Lab 4 and recorded in [git-workflow.md](git-workflow.md), and on the branch naming convention in [github-project.md](../github-project.md) §7.
 
 ## 1. Chosen strategy: feature branching
 
@@ -15,8 +15,8 @@ The project uses **feature branching**:
 
 | Criterion | Situation in this project | Why feature branching fits |
 | --- | --- | --- |
-| Team size | Individual project (README §5.1): one person is Product Owner, developer and Scrum Master. | No integration branch is needed to coordinate several developers. One permanent branch is enough, and a `develop` branch would only add a second branch to keep in sync. |
-| Release frequency | Four two-week sprints (README §5.1, §8). A working increment is delivered at the end of each sprint. | Releases happen at sprint boundaries, not continuously and not on a long release schedule. A tag on `main` per delivered increment is sufficient; separate `release/*` branches for stabilisation would add overhead without benefit. |
+| Team size | Individual project ([planning.md](../planning.md) §1.1): one person is Product Owner, developer and Scrum Master. | No integration branch is needed to coordinate several developers. One permanent branch is enough, and a `develop` branch would only add a second branch to keep in sync. |
+| Release frequency | Four two-week sprints ([planning.md](../planning.md) §1.1, §2). A working increment is delivered at the end of each sprint. | Releases happen at sprint boundaries, not continuously and not on a long release schedule. A tag on `main` per delivered increment is sufficient; separate `release/*` branches for stabilisation would add overhead without benefit. |
 | Experience with automated tests | Test coverage is still small: one pytest test for the health endpoint (`tests/test_health.py`). | Trunk-based development relies on a strong automated test suite and feature flags to keep a constantly integrated trunk releasable. That safety net does not exist yet. A task branch plus a pull request gives a checkpoint for review and local validation before anything reaches `main`. |
 | Expected CI/CD setup | CI is planned in Sprint 1 (US-23: GitHub Actions with Ruff, pytest and coverage, container build, required checks) and GHCR publication in US-24. No workflow exists yet. | Pull requests into `main` are the natural trigger for the planned CI checks, and merges into `main` for image publication. The strategy keeps the same shape when CI arrives: only the required checks are added. |
 | Number of parallel features | Usually one task in progress at a time, sometimes two (for example, a small fix while a task is stashed, as with #132 and #164 in Lab 4). | Few parallel branches mean conflicts are rare and small. Git Flow's extra branch types are designed for many parallel features and maintained releases, which this project does not have. |
@@ -30,7 +30,7 @@ The table records the situation when the strategy was chosen (2026-10-31). Since
 | Branch | Lifetime | Created from | Merged into | Naming rule | Example |
 | --- | --- | --- | --- | --- | --- |
 | `main` | Permanent | — | — | `main` | `main` |
-| Backlog task branch | Temporary (one task) | Up-to-date `main` | `main` via PR | `<issue-number>-<task-id>-<short-description>` (README §10.7) | `132-t-22-1-fastapi-health-endpoint` |
+| Backlog task branch | Temporary (one task) | Up-to-date `main` | `main` via PR | `<issue-number>-<task-id>-<short-description>` ([github-project.md](../github-project.md) §7) | `132-t-22-1-fastapi-health-endpoint` |
 | Coursework branch | Temporary (one lab task) | Up-to-date `main` | `main` via PR | `<issue-number>-<lab-id>-<short-description>` | `167-lab5-branching-strategy` |
 | Lab 4 practice branch (historical) | Temporary | `main` | `main` via PR | `lab4/<topic>` | `lab4/fix-readme-commit-example` |
 
@@ -85,22 +85,22 @@ git fetch --prune
 
    The branch must also be up to date with `main`, so the checks ran on the code that will be merged. If `main` moved after the pull request was opened, GitHub shows **Update branch**, which merges `main` into the branch (§5) and runs the checks again. A failed check blocks the merge until it is fixed by a new commit on the branch. The checks run for documentation-only changes too.
 
-   Running the relevant tests locally before pushing remains good practice (README §11), and the issue's *Done when* conditions are still checked in the self-review.
+   Running the relevant tests locally before pushing remains good practice ([testing.md](testing.md)), and the issue's *Done when* conditions are still checked in the self-review.
 5. **Protected `main`.** `main` is protected by a ruleset (see §7).
 
 ## 4. Release rules
 
-- **Version numbering.** Releases follow semantic versioning, `vMAJOR.MINOR.PATCH`, with release candidates `vMAJOR.MINOR.PATCH-rc.N`; the channels and the full rules are in [versioning.md](versioning.md):
+- **Version numbering.** Releases follow semantic versioning, `vMAJOR.MINOR.PATCH`, with release candidates `vMAJOR.MINOR.PATCH-rc.N`; the channels and the full rules are in [versioning.md](../versioning.md):
   - **MAJOR:** incompatible changes in behaviour or interfaces that users or integrations rely on;
   - **MINOR:** new functionality that stays compatible, for example a new user story delivered;
   - **PATCH:** compatible bug fixes only.
   - While the version is `0.y.z`, the application is still in initial development and may change; `1.0.0` is reserved for the first version considered stable for its intended use.
 - **Where tags are created.** Only **annotated tags** (`git tag -a`) on **validated commits of `main`**, normally the merge commit of the pull request that completes an increment, typically at the end of a sprint. Tags are never created on task branches.
-- **Who creates them.** The project owner creates the tags, pushes them explicitly (`git push origin vX.Y.Z`, because `git push` does not send tags), and approves releases. Pushing the tag runs the release workflow, which promotes the image already built and tested for that commit (`X.Y.Z-rc.N` and `rc`, or `X.Y.Z`, `X.Y` and `latest`) after the owner approves the `production` environment for a release, and creates the GitHub Release with generated notes ([docker-build.md](docker-build.md#versioning-and-image-tags)). There is one release per sprint, plus patch releases for fixes in between.
+- **Who creates them.** The project owner creates the tags, pushes them explicitly (`git push origin vX.Y.Z`, because `git push` does not send tags), and approves releases. Pushing the tag runs the release workflow, which promotes the image already built and tested for that commit (`X.Y.Z-rc.N` and `rc`, or `X.Y.Z`, `X.Y` and `latest`) after the owner approves the `production` environment for a release, and creates the GitHub Release with generated notes ([docker-build.md](../docker-build.md#versioning-and-image-tags)). There is one release per sprint, plus patch releases for fixes in between.
 - **Releases.**
   - `v0.1.0`: annotated tag on `849318c` (merge of PR #165), with a published GitHub Release: <https://github.com/ceciliagalvaoo/hospital-devops/releases/tag/v0.1.0>.
   - `v0.2.0` (end of Sprint 1): annotated tag on the merge commit of the Sprint 1 review pull request (#186), with a published GitHub Release that summarises the increment and links to `docs/sprints/sprint-1.md`; it also published the image tags `0.2.0`, `0.2` and `latest`.
-  - `v0.2.1-rc.1` and `v0.2.1` (**latest**, 2026-11-18): the first promoted release, a PATCH release with the fixes #222, #224 and #225, on `f4bec54` (merge of PR #234); the release candidate was a pre-release, and the release waited for the approval of `production`. Both promoted the tested image of that commit without a rebuild ([publishing.md](publishing.md) §9).
+  - `v0.2.1-rc.1` and `v0.2.1` (**latest**, 2026-11-18): the first promoted release, a PATCH release with the fixes #222, #224 and #225, on `f4bec54` (merge of PR #234); the release candidate was a pre-release, and the release waited for the approval of `production`. Both promoted the tested image of that commit without a rebuild ([publishing.md](../publishing.md) §9).
 - **Published release tags are immutable.** A tag that belongs to a published release is never moved, deleted or recreated; a correction is released as a new version. Temporary tags created for exercises are not releases and may be removed: in Lab 4, the lightweight tag `v0.1.0-rc1` was deleted locally (`git tag -d v0.1.0-rc1`) and on the remote (`git push origin --delete v0.1.0-rc1`).
 
 ```bash
@@ -140,9 +140,9 @@ git push origin v0.2.0
 
 ## 6. Diagram
 
-The commit graph below is **illustrative**: it shows the shape of the strategy, not the real history (see [git-history.txt](git-history.txt) for that). The editable draw.io source is [branching-strategy.drawio](branching-strategy.drawio), and [branching-strategy.png](branching-strategy.png) is its exported image.
+The commit graph below is **illustrative**: it shows the shape of the strategy, not the real history (see [git-history.txt](../labs/git-history.txt) for that). The editable draw.io source is [branching-strategy.drawio](../diagrams/branching-strategy.drawio), and [branching-strategy.png](../diagrams/branching-strategy.png) is its exported image.
 
-![Illustrative commit graph: a task branch leaves main, is updated with origin/main, returns through a pull-request merge commit, and the merge commit receives an annotated release tag](branching-strategy.png)
+![Illustrative commit graph: a task branch leaves main, is updated with origin/main, returns through a pull-request merge commit, and the merge commit receives an annotated release tag](../diagrams/branching-strategy.png)
 
 Text version of the same graph:
 
