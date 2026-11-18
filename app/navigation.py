@@ -1,4 +1,4 @@
-"""Application areas and the roles that may open them (README §3.2 RBAC matrix).
+"""Application areas and the roles that may open them (docs/requirements.md §2.2 RBAC matrix).
 
 The navigation and the access checks of the area pages both read this table, so a role
 never sees a link to an area that would refuse it.

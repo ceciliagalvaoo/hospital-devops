@@ -15,7 +15,7 @@ PASSWORD = "synthetic-password"
 HTML = {"Accept": "text/html,application/xhtml+xml"}
 INVALID = "Invalid login or password."
 
-# Expected areas per role, written out from the RBAC matrix (README §3.2) rather than
+# Expected areas per role, written out from the RBAC matrix (docs/requirements.md §2.2) rather than
 # read from app.navigation, so that a wrong table in the code makes these tests fail.
 ALLOWED = {
     Role.RECEPTIONIST: ["/patients", "/appointments"],

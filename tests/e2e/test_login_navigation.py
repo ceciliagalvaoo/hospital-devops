@@ -9,7 +9,7 @@ from app.models import Role
 
 pytestmark = pytest.mark.e2e
 
-# Written out from the RBAC matrix (README §3.2) instead of read from app.navigation.
+# Written out from the RBAC matrix (docs/requirements.md §2.2) instead of read from app.navigation.
 AREA_PATHS = {
     "Patients": "/patients",
     "Doctors": "/doctors",

@@ -1,7 +1,7 @@
 """Deliberately failing end-to-end test, used to verify the failure artifacts of the CI job.
 
 It runs only when CI_FORCE_FAILURE=true, which is set by a manual CI run with
-``force_failure=true`` (README §11), like the deliberate failure of the Tests job.
+``force_failure=true`` (docs/development/ci.md), like the deliberate failure of the Tests job.
 """
 
 import os
