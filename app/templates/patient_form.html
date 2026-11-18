@@ -1,30 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{% if errors %}Error: {% endif %}Register a patient{% endblock %}
-{% macro field(name, label, type, values, errors, hint=None, required=False, autofocus=False, attrs="") %}
-<div class="field{% if errors[name] %} invalid{% endif %}">
-  <label for="{{ name }}">{{ label }}{% if required %} <span class="required">(required)</span>{% endif %}</label>
-  {% if hint %}<p class="hint" id="{{ name }}-hint">{{ hint }}</p>{% endif %}
-  {% if errors[name] %}<p class="field-error" id="{{ name }}-error">{{ errors[name] }}</p>{% endif %}
-  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}" autocomplete="off"
-    {%- if required %} aria-required="true"{% endif %}
-    {%- if errors[name] %} aria-invalid="true"{% endif %}
-    {%- if hint or errors[name] %} aria-describedby="{% if hint %}{{ name }}-hint{% endif %}{% if hint and errors[name] %} {% endif %}{% if errors[name] %}{{ name }}-error{% endif %}"{% endif %}
-    {%- if autofocus %} autofocus{% endif %} {{ attrs | safe }}>
-</div>
-{% endmacro %}
+{% from "_form.html" import field, error_summary %}
 {% block content %}
 <h1>Register a patient</h1>
 {% set first_error = (errors | list | first) if errors else "full_name" %}
-{% if errors %}
-<div class="message error" role="alert" id="error-summary">
-  <h2>The patient was not registered. Check these fields:</h2>
-  <ul>
-    {% for name, message in errors.items() %}
-    <li><a href="#{{ name }}">{{ message }}</a></li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
+{{ error_summary(errors, "The patient was not registered. Check these fields:") }}
 <form class="card patient-form" method="post" action="/patients/new" novalidate>
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   {{ field("full_name", "Full name", "text", values, errors, required=True, autofocus=first_error == "full_name", attrs='maxlength="120"') }}
