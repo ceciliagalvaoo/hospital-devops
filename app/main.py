@@ -32,6 +32,19 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(pages.router)
 
+STATIC_PREFIX = "/static/"
+
+
+@app.middleware("http")
+async def do_not_store_responses(request: Request, call_next) -> Response:
+    """Pages and API responses may contain account data, so browsers must not keep a copy:
+    otherwise the Back button shows a page of an ended session (#222). Static files may
+    still be cached."""
+    response = await call_next(request)
+    if not request.url.path.startswith(STATIC_PREFIX):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
 
 @app.exception_handler(StarletteHTTPException)
 async def page_errors(request: Request, exc: StarletteHTTPException) -> Response:

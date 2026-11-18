@@ -28,7 +28,7 @@ The goal and the stories come from the projected sprint backlog in README §8.4.
 | US-15 | #19 | Deactivate staff accounts and reject subsequent access | 3 | P2 |
 | **Total** | | | **23** | |
 
-**Refinement** (README §5.4 and §7.6): every story has acceptance criteria in README §4.3; none is larger than 5 points, so no story needs splitting (13-point stories are split and 8-point stories examined); the dependencies on US-01 and US-22 are satisfied by Sprint 1. All selected stories and their 33 tasks are assigned to Sprint 2 in the GitHub Project. The *Done when* conditions of each task are refined when the task starts, as in Sprint 1.
+**Refinement** (README §5.4 and §7.6): every story has acceptance criteria in README §4.3; none is larger than 5 points, so no story needs splitting (13-point stories are split and 8-point stories examined); the dependencies on US-01 and US-22 are satisfied by Sprint 1. All selected stories and their 32 tasks are assigned to Sprint 2 in the GitHub Project. The *Done when* conditions of each task are refined when the task starts, as in Sprint 1.
 
 ### 1.2 Capacity
 
@@ -90,6 +90,18 @@ Each entry records the completed work, the next action and any blockers.
 
 - **Done:** Sprint Planning (§1): stories, capacity, sequence and decisions; task #225 created from the review feedback; unblocked items moved to *Ready*.
 - **Next:** #222, the Back-button defect.
+- **Blockers:** none.
+
+### 2026-11-17
+
+- **Done:** Lab 8 (publishing, versioning and registries) planned: Task 5 in this project as #227 (versioning and channels), #228 (build once and promote, with environments; it also fixes #224) and #229 (release `v0.2.1-rc.1` → `v0.2.1` and `docs/publishing.md`), and the report of Tasks 0–4 as #230. `v0.2.1` replaces the lab's `v0.1.0`, which already exists. The moving tag `dev` replaces `main`. The build-once part of #217 moved to #228.
+- **Next:** the sequence of §1.4 changes to #222 → #225 → #227 → #228 → #229 → #216 → #169 → the stories → #217 → #219 → #188. Week 1 (until 2026-11-21): the defects, Lab 8, #216, #169 and the patient stories; week 2: the doctor and staff-account stories, #217, #219 and #188.
+- **Blockers:** none. Correction: §1.1 said 33 story tasks; the project has 32.
+
+### 2026-11-18
+
+- **Done:** #222, every response except the static files is sent with `Cache-Control: no-store`, so Back after logout shows the login page.
+- **Next:** #225, the API documentation only in development.
 - **Blockers:** none.
 
 ## 3. Increment
