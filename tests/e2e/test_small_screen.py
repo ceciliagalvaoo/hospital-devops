@@ -12,7 +12,16 @@ pytestmark = pytest.mark.e2e
 
 SMALL_SCREEN = {"width": 320, "height": 640}
 SCROLLS_HORIZONTALLY = "document.documentElement.scrollWidth > document.documentElement.clientWidth"
-PAGES = ["/", "/patients", "/doctors", "/appointments", "/records", "/staff", "/no-such-page"]
+PAGES = [
+    "/",
+    "/patients",
+    "/patients/new",
+    "/doctors",
+    "/appointments",
+    "/records",
+    "/staff",
+    "/no-such-page",
+]
 
 
 def assert_fits(page: Page, description: str) -> None:
