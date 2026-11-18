@@ -1,5 +1,6 @@
 """CI smoke tests: check the workflow contract that pull-request checks rely on."""
 
+import configparser
 import os
 import re
 from pathlib import Path
@@ -11,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_FILE = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_FILE = ROOT / ".github" / "workflows" / "release.yml"
 DOCKERFILE = ROOT / "Dockerfile"
+COVERAGE_CONFIG = ROOT / ".coveragerc"
 REQUIRED_CHECKS = {"Lint", "Tests", "E2E", "Container"}
 DOCKER_BUILD = re.compile(r"docker build(?!x)")  # an image build, not "docker buildx imagetools"
 
@@ -54,6 +56,23 @@ def test_tests_job_fails_instead_of_skipping_without_database(workflow):
 
     assert tests_job["env"]["CI"] == "true"
     assert "TEST_DATABASE_URL" in tests_job["env"]
+
+
+def test_coverage_gate_requires_every_line_and_branch_of_the_application():
+    config = configparser.ConfigParser()
+    config.read(COVERAGE_CONFIG, encoding="utf-8")
+
+    assert config["run"]["source"] == "app"
+    assert config["run"].getboolean("branch") is True
+    assert float(config["report"]["fail_under"]) == 100
+
+
+def test_tests_job_measures_coverage_of_the_application_so_the_gate_applies(workflow):
+    commands = " ".join(step.get("run", "") for step in workflow["jobs"]["test"]["steps"])
+
+    assert "--cov=app" in commands
+    assert "--cov-fail-under" not in commands  # one threshold, in .coveragerc
+    assert "--no-cov" not in commands
 
 
 def test_e2e_job_runs_browser_tests_and_keeps_artifacts_of_failures(workflow):

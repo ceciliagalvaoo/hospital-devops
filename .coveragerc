@@ -1,0 +1,12 @@
+# Coverage quality gate (Lab 7, Task 6, #216). One rule for local runs and CI: every line and
+# every branch of app/ is executed by the tests. Code that cannot run inside the test process
+# is excluded explicitly with "# pragma: no cover" and justified in its pull request.
+# Coverage is necessary, not sufficient: tests must also assert the behaviour (mutation checks).
+[run]
+source = app
+branch = True
+
+[report]
+fail_under = 100
+show_missing = True
+precision = 1
