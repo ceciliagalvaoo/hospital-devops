@@ -43,6 +43,10 @@ async def do_not_store_responses(request: Request, call_next) -> Response:
     response = await call_next(request)
     if not request.url.path.startswith(STATIC_PREFIX):
         response.headers["Cache-Control"] = "no-store"
+    # DEMO for #216, never merged: every request path starts with "/", so this condition is
+    # always true. Every line runs, but the branch where it is false is never taken.
+    if request.url.path.startswith("/"):
+        response.headers["X-Demo"] = "always"
     return response
 
 
