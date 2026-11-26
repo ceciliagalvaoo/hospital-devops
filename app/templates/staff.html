@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Staff accounts{% endblock %}
+{% block content %}
+{% if created %}
+<p class="message notice" role="status">Account {{ created.login }} created with the role {{ created.role.value }}.</p>
+{% endif %}
+<h1>Staff accounts</h1>
+<p><a href="/staff/new">Create a staff account</a></p>
+<div class="results" role="region" aria-labelledby="accounts-summary" tabindex="0">
+  <p id="accounts-summary">{{ accounts | length }} account{{ "" if accounts | length == 1 else "s" }}.</p>
+  <table>
+    <thead>
+      <tr><th scope="col">Login</th><th scope="col">Role</th><th scope="col">Status</th></tr>
+    </thead>
+    <tbody>
+      {% for item in accounts %}
+      <tr{% if created and item.id == created.id %} class="highlight"{% endif %}>
+        <td>{{ item.login }}</td>
+        <td>{{ item.role.value | capitalize }}</td>
+        <td>{{ "Active" if item.is_active else "Inactive" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

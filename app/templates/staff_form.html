@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_form.html" import field, select_field, error_summary %}
+{% block title %}{% if errors %}Error: {% endif %}Create a staff account{% endblock %}
+{% block content %}
+<h1>Create a staff account</h1>
+{{ error_summary(errors, "The account was not created. Check these fields:") }}
+{% set first_error = (errors | list | first) if errors else "login" %}
+<form class="card patient-form" method="post" action="/staff/new" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {{ field("login", "Login", "text", values, errors, hint="3 to 64 letters, digits, dots, hyphens or underscores. Stored in lower case.", required=True, autofocus=first_error == "login", attrs='maxlength="64" autocapitalize="none" spellcheck="false"') }}
+  {{ select_field("role", "Role", roles, values, errors, placeholder="Choose a role…", required=True, autofocus=first_error == "role") }}
+  {{ field("password", "Password", "password", {}, errors, hint="At least 12 characters.", required=True, autofocus=first_error == "password", autocomplete="new-password") }}
+  {{ field("password_confirmation", "Repeat the password", "password", {}, errors, required=True, autofocus=first_error == "password_confirmation", autocomplete="new-password") }}
+  <div class="actions">
+    <button type="submit">Create account</button>
+    <a href="/staff">Cancel</a>
+  </div>
+</form>
+{% endblock %}

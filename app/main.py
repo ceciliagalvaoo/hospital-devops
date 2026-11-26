@@ -18,6 +18,7 @@ from app.routes import (
     patient_pages,
     patients,
     staff,
+    staff_pages,
 )
 from app.templating import render, wants_html
 
@@ -85,6 +86,7 @@ def create_app() -> FastAPI:
     application.include_router(pages.router)
     application.include_router(patient_pages.router)
     application.include_router(doctor_pages.router)
+    application.include_router(staff_pages.router)
     application.include_router(patients.router)
     application.include_router(doctors.router)
     application.include_router(staff.router)
