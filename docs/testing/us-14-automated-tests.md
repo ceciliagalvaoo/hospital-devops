@@ -1,11 +1,12 @@
 # US-14 automated tests
 
-This document maps each acceptance criterion of US-14, create staff accounts ([backlog.md](../backlog.md) §3), and each case of T-14.3 (#17) to the automated tests that verify it. All tests use synthetic accounts and passwords, never real data. They run in the `Tests` job of CI on every pull request.
+This document maps each acceptance criterion of US-14, create staff accounts ([backlog.md](../backlog.md) §3), and each case of T-14.3 (#17) to the automated tests that verify it. All tests use synthetic accounts and passwords, never real data. The unit and integration tests run in the `Tests` job of CI on every pull request; the browser end-to-end tests (T-14.4, #18) run with `pytest -m e2e` in the `E2E` job.
 
 Run them locally against the test database ([testing.md](../development/testing.md)):
 
 ```bash
 pytest tests/test_account_rules.py tests/integration/test_staff_account_creation.py tests/integration/test_staff_pages.py tests/integration/test_us14_staff_account_creation.py
+pytest -m e2e tests/e2e/test_create_account_and_log_in.py   # browser end-to-end tests
 ```
 
 ## Test modules
@@ -17,14 +18,15 @@ pytest tests/test_account_rules.py tests/integration/test_staff_account_creation
 | `tests/integration/test_staff_pages.py` | 12 | the staff accounts area and the creation form: list, confirmation, passwords never sent back, `autocomplete` (T-14.2, #16) |
 | `tests/integration/test_us14_staff_account_creation.py` | 41 | acceptance and access cases of T-14.3 (#17), each through the API and the page |
 | `tests/integration/test_us01_authentication.py` | (shared) | both creation routes refuse requests without a CSRF token |
+| `tests/e2e/test_create_account_and_log_in.py` | 3 | browser end-to-end: create an account (after a password mismatch) and log in with it and its role; receptionists and doctors refused (T-14.4, #18) |
 
 ## Acceptance criteria
 
 | US-14 acceptance criterion | Verified by |
 | --- | --- |
-| Given an authenticated administrator, a unique login and one of the three supported roles, when the account is created, then the password is stored as a bcrypt hash and the new user can log in with the assigned role. | `test_us14_staff_account_creation.py::test_a_new_account_has_a_bcrypt_hash_and_logs_in_with_its_role` (each role, API and page; the stored hash starts with `$2b$12$` and does not contain the password; the new account logs in and gets its role), `::test_the_new_account_sees_the_areas_of_its_role`; `test_staff_pages.py::test_creating_an_account_shows_it_in_the_list_with_a_confirmation` |
+| Given an authenticated administrator, a unique login and one of the three supported roles, when the account is created, then the password is stored as a bcrypt hash and the new user can log in with the assigned role. | `test_us14_staff_account_creation.py::test_a_new_account_has_a_bcrypt_hash_and_logs_in_with_its_role` (each role, API and page; the stored hash starts with `$2b$12$` and does not contain the password; the new account logs in and gets its role), `::test_the_new_account_sees_the_areas_of_its_role`; `test_staff_pages.py::test_creating_an_account_shows_it_in_the_list_with_a_confirmation`; in a browser: `test_create_account_and_log_in.py::test_create_an_account_and_log_in_with_its_role` (the account created from the navigation, stored in lower case with a bcrypt hash, listed with the confirmation; after the administrator logs out, it logs in with the login typed in capitals and sees exactly the doctor's areas) |
 | Given a duplicate login or an unsupported role, when account creation is submitted, then the system rejects it. | `test_us14_staff_account_creation.py::test_a_duplicate_login_is_rejected_in_any_case` (the same login in three cases; the existing account unchanged), `::test_an_unsupported_role_is_rejected` (empty, `patient`, `nurse`, `Administrator`, `root`); API and page, HTTP 422, nothing created; `test_staff_account_creation.py::test_a_login_taken_between_the_check_and_the_insert_is_reported` |
-| Given a receptionist or doctor, when they attempt to create a staff account, then the system refuses the action. | `test_us14_staff_account_creation.py::test_receptionists_and_doctors_are_refused` (API and page, HTTP 403, nothing created); `test_staff_pages.py::test_only_administrators_open_the_staff_pages` (the list, the form and the submission) |
+| Given a receptionist or doctor, when they attempt to create a staff account, then the system refuses the action. | `test_us14_staff_account_creation.py::test_receptionists_and_doctors_are_refused` (API and page, HTTP 403, nothing created); `test_staff_pages.py::test_only_administrators_open_the_staff_pages` (the list, the form and the submission); in a browser: `test_create_account_and_log_in.py::test_receptionists_and_doctors_cannot_create_accounts` |
 
 ## Cases of T-14.3
 
@@ -38,3 +40,5 @@ pytest tests/test_account_rules.py tests/integration/test_staff_account_creation
 ## Mutation checks
 
 Each of these faults in the application code made tests of `test_us14_staff_account_creation.py` fail: receptionists allowed in the API; doctors allowed on the pages; duplicates checked as typed instead of in lower case; any role accepted; a bcrypt cost factor of 4 instead of 12.
+
+The end-to-end test fails when logins are stored as typed, when logins are case-sensitive at login, when the passwords are sent back after an error, when every account gets the receptionist role and when the password confirmation is not checked.

@@ -2,7 +2,7 @@
 
 The test plan of `hospital-devops` (Lab 7, Task 6.1, 6.4 and 6.6, #219): which tests verify each user story, where each kind of test runs, the pipeline that runs them, the thresholds and an example of a failed and fixed run. How to run the tests locally is in [development/testing.md](development/testing.md); the test maps and manual checklists of the delivered stories are in [testing/](testing/).
 
-State on 2026-11-26: US-01, US-22, US-23 and US-24 (Sprint 1) and US-02, US-03, US-09 and US-10 (Sprint 2) are delivered and their tests exist; the other stories list the test tasks planned in [tasks.md](tasks.md).
+State on 2026-11-26: US-01, US-22, US-23 and US-24 (Sprint 1) and US-02, US-03, US-09, US-10 and US-14 (Sprint 2) are delivered and their tests exist; the other stories list the test tasks planned in [tasks.md](tasks.md).
 
 ## 1. Test types
 
@@ -47,7 +47,7 @@ Legend: test files of delivered stories are named; for the other stories the pla
 | **US-11** Update an appointment | n/a: reuses the validator of T-04.8 | T-11.3 (A) | n/a (J) | T-11.4 (A) | n/a: reuses the booking form checked in T-04.7 |
 | **US-12** Cancel an appointment | n/a (R) | T-12.3 (A) | n/a (J) | T-12.4 (A) | n/a: a single confirmation action |
 | **US-13** Update doctor details | n/a: reuses the availability rules unit-tested for US-02 | T-13.3 (A) | n/a (J) | T-13.4 (A) | n/a: reuses the availability inputs checked in T-02.6 |
-| **US-14** Create staff accounts | n/a (R) | T-14.3 (A) | n/a (J) | T-14.4 (A) | n/a: a short form; login wording is checked in US-01 |
+| **US-14** Create staff accounts | `test_account_rules.py` | `test_staff_account_creation.py`, `test_staff_pages.py`, `test_us14_staff_account_creation.py` | n/a (J) | `test_create_account_and_log_in.py` | n/a: a short form; login wording is checked in US-01 |
 | **US-15** Deactivate a staff account | n/a (R) | T-15.3 (A) | n/a (J) | T-15.4 (A) | n/a: a single action whose effect (refused login) is automated |
 | **US-16** Deactivate a doctor | n/a (R) | T-16.3 (A), T-16.4 (A) | n/a (J) | T-16.5 (A) | n/a: a single action |
 | **US-17** Deactivate a patient | n/a (R) | T-17.3 (A), T-17.4 (A) | n/a (J) | T-17.5 (A) | n/a: a single action |
