@@ -1,4 +1,4 @@
-"""Doctor registration rules (US-02), shared by the JSON API and the pages.
+"""Doctor registration (US-02) and update (US-13) rules, shared by the JSON API and the pages.
 
 A doctor profile belongs to an active staff account with the doctor role that has no profile
 yet. The name and the specialisation are required, and the availability is at least one
@@ -150,6 +150,24 @@ def validate_doctor(
     }:
         errors["staff_account_id"] = MESSAGES["account_unavailable"]
 
+    profile, profile_errors = _profile(full_name, specialisation, weekdays, starts, ends)
+    errors |= profile_errors
+
+    if errors:
+        raise InvalidDoctor(errors)
+    return DoctorDetails(int(account_id), *profile)
+
+
+def _profile(
+    full_name: str | None,
+    specialisation: str | None,
+    weekdays: list[str],
+    starts: list[str],
+    ends: list[str],
+) -> tuple[tuple, dict[str, str]]:
+    """The name, specialisation and availability rules, shared by registration and updates.
+    Return the cleaned values and the errors of the invalid fields."""
+    errors: dict[str, str] = {}
     name = (full_name or "").strip()
     if not name:
         errors["full_name"] = MESSAGES["name_missing"]
@@ -157,15 +175,53 @@ def validate_doctor(
         errors["full_name"] = MESSAGES["name_too_long"]
 
     chosen = (specialisation or "").strip()
-    if chosen not in {item.value for item in Specialisation}:
+    valid = chosen in {item.value for item in Specialisation}
+    if not valid:
         errors["specialisation"] = MESSAGES["specialisation_invalid"]
 
     availability, availability_errors = validate_availability(weekdays, starts, ends)
     errors |= availability_errors
+    return (name, Specialisation(chosen) if valid else None, availability), errors
 
+
+@dataclass(frozen=True)
+class DoctorUpdate:
+    full_name: str
+    specialisation: Specialisation
+    availability: list[WeeklyRange]
+
+
+def validate_doctor_update(
+    full_name: str | None,
+    specialisation: str | None,
+    weekdays: list[str],
+    starts: list[str],
+    ends: list[str],
+) -> DoctorUpdate:
+    """Return the cleaned changes, or raise InvalidDoctor listing every bad field. The staff
+    account cannot change: a profile stays linked to the account it was created for."""
+    profile, errors = _profile(full_name, specialisation, weekdays, starts, ends)
     if errors:
         raise InvalidDoctor(errors)
-    return DoctorDetails(int(account_id), name, Specialisation(chosen), availability)
+    return DoctorUpdate(*profile)
+
+
+def _ranges(availability: list[WeeklyRange]) -> list[AvailabilityRange]:
+    return [
+        AvailabilityRange(weekday=r.weekday, start_time=r.start, end_time=r.end)
+        for r in availability
+    ]
+
+
+def update_doctor(db: Session, doctor: Doctor, update: DoctorUpdate) -> Doctor:
+    """Replace the name, specialisation and weekly availability of a doctor. The profile,
+    its account and its active status are kept, so nothing that refers to the doctor is lost;
+    only the replaced ranges are deleted."""
+    doctor.full_name = update.full_name
+    doctor.specialisation = update.specialisation
+    doctor.availability = _ranges(update.availability)
+    db.commit()
+    return doctor
 
 
 def register_doctor(db: Session, details: DoctorDetails) -> Doctor:
@@ -174,10 +230,7 @@ def register_doctor(db: Session, details: DoctorDetails) -> Doctor:
         staff_account_id=details.staff_account_id,
         full_name=details.full_name,
         specialisation=details.specialisation,
-        availability=[
-            AvailabilityRange(weekday=r.weekday, start_time=r.start, end_time=r.end)
-            for r in details.availability
-        ],
+        availability=_ranges(details.availability),
     )
     db.add(doctor)
     db.commit()
