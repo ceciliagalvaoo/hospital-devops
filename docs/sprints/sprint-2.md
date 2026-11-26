@@ -128,6 +128,15 @@ Each entry records the completed work, the next action and any blockers.
 - **Next:** close US-10; week 2 starts with US-02 (#55–#60), registering a doctor.
 - **Blockers:** none. A local dry run showed that `imagetools create` from an image pushed by Docker wraps it in an index with a new digest; the image is therefore pushed under an upload name first, and every name is created from that index. The first CI run of the pull request failed in `Container`: `--pull never` also applied to the PostgreSQL image, which a clean runner does not have; the local-image mode now relies on `pull_policy: never` for the application only, verified locally after removing the PostgreSQL image.
 
+### 2026-11-26
+
+- **Done:**
+  - US-10 (2 points) closed on 2026-11-18 after every criterion was checked, with the image `sha-c062e8d` (`0.3.0-dev.111`) published and verified; week 1 ended with 7 of 23 points and every planned item done.
+  - No work was done from 2026-11-19 to 2026-11-25, so week 2 starts today with 16 points and 21 pull requests left before the review on 2026-11-28. The Product Owner kept the sprint scope and set the order by value: US-02 (P1), then the Lab 7 tasks #217 and #219, then US-14, US-13 and US-15. Whatever is not done by the review returns to the backlog there.
+  - #55 T-02.1, the `doctors` and `doctor_availability` tables (migration `0005`). The Product Owner decided the open points of the doctor stories: a doctor profile is linked to an existing doctor account (one per account), the specialisation comes from a fixed list, and the availability is a set of weekly ranges (weekday, start and end time).
+- **Next:** #56 T-02.2, doctor registration with availability validation.
+- **Blockers:** none. The local test environment had been removed with the session's temporary files and was recreated from `requirements-dev.txt`.
+
 ## 3. Increment
 
 To be completed in the Sprint Review (#188).

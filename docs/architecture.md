@@ -67,6 +67,8 @@ Dependencies point inwards: routes use `access`, `auth`, `csrf` and `templating`
 ```mermaid
 erDiagram
     staff_accounts ||--o{ staff_sessions : "has"
+    staff_accounts ||--o| doctors : "has a profile"
+    doctors ||--o{ doctor_availability : "works"
     staff_accounts {
         integer id PK
         varchar_64 login UK "unique"
@@ -91,10 +93,26 @@ erDiagram
         boolean is_active "default true; deactivated, never deleted"
         timestamptz created_at "default now()"
     }
+    doctors {
+        integer id PK
+        integer staff_account_id FK,UK "a doctor account; on delete restrict"
+        varchar_120 full_name "required, not blank (check constraint)"
+        varchar_40 specialisation "fixed list (check constraint)"
+        boolean is_active "default true; deactivated, never deleted"
+        timestamptz created_at "default now()"
+    }
+    doctor_availability {
+        integer id PK
+        integer doctor_id FK "on delete cascade, indexed"
+        smallint weekday "0 = Monday ... 6 = Sunday"
+        time start_time
+        time end_time "after start_time (check constraint)"
+    }
 ```
 
 - **Staff accounts** are the only users; patients are data, not users ([requirements.md](requirements.md) §2.1). The role is stored as text with a check constraint (`native_enum=False`), so new roles need no PostgreSQL enum migration.
 - **Patients** hold administrative data only, never clinical notes. Only the name and the date of birth are required (US-03); the contact details are an optional phone and e-mail. The identifier used by staff and by patient search (US-09) is the **record number** `P-` followed by the id with six digits, derived from the id assigned by the database, so it is unique, never changes and needs no column; no national document number is collected (data minimisation). Both choices were made by the Product Owner on 2026-11-18 (#31). Patients are deactivated instead of deleted, so their history remains (US-17).
+- **Doctors** are profiles of staff accounts with the doctor role, at most one per account, so a doctor logs in with that account; the account cannot be deleted while it has a profile. The specialisation comes from a fixed list in `app/models/doctor.py`, and the availability is a set of **weekly ranges** (weekday, start and end time) that repeat every week and are removed with the profile; the database rejects malformed ranges, and the registration rules (#56) also require ranges on a 30-minute grid that do not overlap on the same day. Choosing an existing doctor account, the fixed list and weekly ranges were decided by the Product Owner on 2026-11-26 (#55). Doctors are deactivated instead of deleted, so their appointments remain (US-16).
 - **Sessions** are stored server-side, so logout and deactivation take effect immediately. Only a hash of the random cookie token is stored; a database leak does not reveal usable tokens.
 - **Migrations** are the only way to change the schema. Constraint names follow a fixed naming convention (`pk_`, `uq_`, `ck_`, `fk_`, `ix_` in `app/db.py`), so migrations are reviewable and reversible. A test compares the models with the migrations (`alembic check` equivalent) and every revision is applied and rolled back in the test database.
 
