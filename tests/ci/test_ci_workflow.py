@@ -79,7 +79,12 @@ def test_e2e_job_runs_browser_tests_and_keeps_artifacts_of_failures(workflow):
     e2e_job = workflow["jobs"]["e2e"]
     steps = e2e_job["steps"]
     commands = " ".join(step.get("run", "") for step in steps)
-    upload = next(step for step in steps if "upload-artifact" in step.get("uses", ""))
+    upload = next(
+        step
+        for step in steps
+        if "upload-artifact" in step.get("uses", "")
+        and step["with"]["name"] == "playwright-results"
+    )
 
     assert e2e_job["env"]["CI"] == "true"
     assert "TEST_DATABASE_URL" in e2e_job["env"]
@@ -105,7 +110,11 @@ def test_container_job_builds_the_image_once_and_smoke_tests_that_image(workflow
     container = workflow["jobs"]["container"]
     commands = _commands(container)
     smoke = next(step for step in container["steps"] if "pytest -m smoke" in step.get("run", ""))
-    upload = next(s for s in container["steps"] if "upload-artifact" in s.get("uses", ""))
+    upload = next(
+        s
+        for s in container["steps"]
+        if "upload-artifact" in s.get("uses", "") and s["with"]["name"] == "tested-image"
+    )
 
     assert container["steps"][0]["with"]["fetch-depth"] == 0
     assert "python scripts/image_metadata.py" in commands
@@ -197,6 +206,39 @@ def test_only_the_github_release_job_can_write_to_the_repository(release):
     assert set(github_release["needs"]) == {"version", "promote"}
     assert "--generate-notes" in _commands(github_release)
     assert "--prerelease" in _commands(github_release)
+
+
+@pytest.mark.parametrize(
+    ("job_id", "command", "report"),
+    [
+        ("test", "pytest -v", "tests"),
+        ("e2e", "pytest -m e2e", "e2e"),
+        ("container", "pytest -m smoke", "container"),
+    ],
+)
+def test_test_results_are_uploaded_also_when_a_job_fails(workflow, job_id, command, report):
+    steps = workflow["jobs"][job_id]["steps"]
+    run = next(step for step in steps if command in step.get("run", ""))
+    upload = next(
+        step
+        for step in steps
+        if "upload-artifact" in step.get("uses", "")
+        and step["with"]["name"] == f"test-results-{report}"
+    )
+
+    assert f"--junitxml=test-reports/{report}.xml" in run["run"]
+    assert upload["if"] == "always()"
+    assert upload["with"]["path"] == "test-reports/"
+
+
+def test_black_box_journeys_run_against_the_image_that_is_published(workflow):
+    container = workflow["jobs"]["container"]
+    smoke = next(s for s in container["steps"] if "pytest -m smoke" in s.get("run", ""))
+    journeys = (ROOT / "tests" / "smoke" / "test_black_box_journey.py").read_text(encoding="utf-8")
+
+    assert smoke["env"]["SMOKE_IMAGE"] == "hospital-devops:ci"  # the image Publish pushes
+    assert "pytestmark = pytest.mark.smoke" in journeys
+    assert "from app" not in journeys  # black box: no application code
 
 
 def test_runs_on_main_are_not_cancelled_by_newer_runs(workflow):

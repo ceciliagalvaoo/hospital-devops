@@ -25,3 +25,7 @@ playwright-report/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# JUnit test reports written by pytest --junitxml
+test-reports/
+
