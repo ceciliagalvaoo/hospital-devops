@@ -144,7 +144,8 @@ Each entry records the completed work, the next action and any blockers.
   - #217 verified on `main`: run 45818801814 published `sha-a2497bc` with the same image ID as the image the `Container` job built and tested (`sha256:c7d1f172…`), and `Verify image` passed.
   - #219 LAB7-06c, the test plan `docs/testing.md`: the five test types and where they run, the tests of all 26 user stories (the files of the delivered ones, the planned test tasks of the others, and a reason for every type a story does not use), the pipeline and why its checks run in parallel, the thresholds, the failed and fixed run of #234, and why the tests use a PostgreSQL service container instead of Testcontainers.
   - #15 T-14.1, staff account creation: `POST /api/staff` for administrators (receptionists and doctors HTTP 403), with a unique login, one of the three roles and a password of 12 characters to 72 bytes stored as a bcrypt hash. Logins are now stored and compared in lower case, at creation and at login, as decided after the Sprint 1 review, so a duplicate in another case is refused and `NIGHT.SHIFT` logs in as `night.shift`. The minimum of 12 characters is a design choice, not a requirement; the Product Owner can change it.
-- **Next:** #16 T-14.2, the staff account registration form.
+  - #16 T-14.2, the staff accounts area `/staff` (account list and creation link) and the form `/staff/new` with the password asked twice; after an error the login and role are kept and the passwords are never sent back, and the password fields use `autocomplete="new-password"`, now a parameter of the shared field macro (it had been fixed to `off`).
+- **Next:** #17 T-14.3, the acceptance and access tests of US-14.
 - **Blockers:** none. The local test environment had been removed with the session's temporary files and was recreated from `requirements-dev.txt`.
 
 ## 3. Increment
