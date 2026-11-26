@@ -26,6 +26,7 @@ HTML = {"Accept": "text/html"}
 # Every state-changing route of the application. A new POST route must be added here
 # (test_every_state_changing_route_is_listed fails otherwise).
 STATE_CHANGING_ROUTES = [
+    ("POST", "/api/doctors"),
     ("POST", "/api/patients"),
     ("POST", "/api/patients/{patient_id}/contacts"),
     ("POST", "/auth/login"),
