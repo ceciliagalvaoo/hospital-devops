@@ -36,6 +36,8 @@ def authenticate(db: Session, login: str, password: str) -> StaffAccount | None:
 
     A password check always runs, so unknown logins take as long as known ones.
     """
+    # Logins are stored in lower case (app/accounts.py), so "Dev.Doctor" logs in as dev.doctor.
+    login = login.strip().lower()
     account = db.scalar(select(StaffAccount).where(StaffAccount.login == login))
     if account is None:
         verify_password(password, _dummy_password_hash())
