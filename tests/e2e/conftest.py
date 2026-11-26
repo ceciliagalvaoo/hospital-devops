@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from app import db
 from app.main import app
-from app.models import Patient, Role, StaffAccount
+from app.models import Doctor, Patient, Role, StaffAccount
 from tests.database import get_test_database_url
 
 PASSWORD = "synthetic-e2e-password"
@@ -115,4 +115,23 @@ def patient_name(db_engine: Engine):
     yield prefix
     with Session(db_engine) as session:
         session.execute(delete(Patient).where(Patient.full_name.startswith(prefix)))
+        session.commit()
+
+
+@pytest.fixture
+def unlinked_doctor_account(db_engine: Engine) -> E2EAccount:
+    """A synthetic doctor account without a doctor profile, for one test. Its profile, if
+    the test creates one, is deleted first, because the account cannot be deleted while it
+    has a profile."""
+    account = E2EAccount(f"e2e.doctor.{uuid.uuid4().hex[:8]}", Role.DOCTOR)
+    with Session(db_engine) as session:
+        staff = StaffAccount(login=account.login, role=account.role)
+        staff.set_password(account.password)
+        session.add(staff)
+        session.commit()
+        staff_id = staff.id
+    yield account
+    with Session(db_engine) as session:
+        session.execute(delete(Doctor).where(Doctor.staff_account_id == staff_id))
+        session.execute(delete(StaffAccount).where(StaffAccount.id == staff_id))
         session.commit()
