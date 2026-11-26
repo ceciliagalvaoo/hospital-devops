@@ -48,7 +48,7 @@ Legend: test files of delivered stories are named; for the other stories the pla
 | **US-12** Cancel an appointment | n/a (R) | T-12.3 (A) | n/a (J) | T-12.4 (A) | n/a: a single confirmation action |
 | **US-13** Update doctor details | `test_doctor_rules.py` (the rules shared with US-02) | `test_doctor_update.py`, `test_doctor_pages.py`, `test_us13_doctor_update.py` | n/a (J) | `test_edit_doctor_and_reload.py` | n/a: reuses the availability inputs checked in T-02.6 |
 | **US-14** Create staff accounts | `test_account_rules.py` | `test_staff_account_creation.py`, `test_staff_pages.py`, `test_us14_staff_account_creation.py` | n/a (J) | `test_create_account_and_log_in.py` | n/a: a short form; login wording is checked in US-01 |
-| **US-15** Deactivate a staff account | n/a (R) | T-15.3 (A) | n/a (J) | T-15.4 (A) | n/a: a single action whose effect (refused login) is automated |
+| **US-15** Deactivate a staff account | n/a (R) | `test_staff_account_deactivation.py`, `test_staff_pages.py`, `test_us15_account_deactivation.py` | n/a (J) | T-15.4 (A) | n/a: a single action whose effect (refused login) is automated |
 | **US-16** Deactivate a doctor | n/a (R) | T-16.3 (A), T-16.4 (A) | n/a (J) | T-16.5 (A) | n/a: a single action |
 | **US-17** Deactivate a patient | n/a (R) | T-17.3 (A), T-17.4 (A) | n/a (J) | T-17.5 (A) | n/a: a single action |
 | **US-18** Export authorised data | n/a (R) | T-18.3 (A): headers, escaping, empty output | n/a (J) | T-18.4 (A): downloads and checks the CSV | n/a: the CSV content is fully automated |
