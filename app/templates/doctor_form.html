@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "_form.html" import field, select_field, error_summary %}
+{% block title %}{% if errors %}Error: {% endif %}Register a doctor{% endblock %}
+{% block content %}
+<h1>Register a doctor</h1>
+{{ error_summary(errors, "The doctor was not registered. Check these fields:") }}
+{% set first_error = (errors | list | first) if errors else "staff_account_id" %}
+{% if first_error == "availability" %}{% set first_error = "availability_1" %}{% endif %}
+{% if not accounts %}
+<p class="message notice" role="status">Every active doctor account already has a doctor profile. A new doctor first needs a staff account with the doctor role.</p>
+{% endif %}
+<form class="card patient-form" method="post" action="/doctors/new" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {{ select_field("staff_account_id", "Staff account", accounts, values, errors, placeholder="Choose a doctor account…", hint="Active doctor accounts without a doctor profile.", required=True, autofocus=first_error == "staff_account_id") }}
+  {{ field("full_name", "Full name", "text", values, errors, required=True, autofocus=first_error == "full_name", attrs='maxlength="120"') }}
+  {{ select_field("specialisation", "Specialisation", specialisations, values, errors, placeholder="Choose a specialisation…", required=True, autofocus=first_error == "specialisation") }}
+  <fieldset class="availability{% if errors.availability %} invalid{% endif %}" aria-describedby="availability-hint{% if errors.availability %} availability-error{% endif %}">
+    <legend id="availability">Weekly availability <span class="required">(required)</span></legend>
+    <p class="hint" id="availability-hint">At least one range. Times on the half hour, for example 08:00 or 13:30; ranges of the same day must not overlap. Leave unused rows empty.</p>
+    {% if errors.availability %}<p class="field-error" id="availability-error">{{ errors.availability }}</p>{% endif %}
+    {% for row in rows %}
+    {% set key = "availability_" ~ loop.index %}
+    {% set invalid = errors[key] %}
+    <fieldset class="range{% if invalid %} invalid{% endif %}">
+      <legend>Range {{ loop.index }}</legend>
+      {% if invalid %}<p class="field-error" id="{{ key }}-error">{{ invalid }}</p>{% endif %}
+      <div class="range-fields">
+        <div class="field">
+          <label for="{{ key }}">Weekday</label>
+          <select id="{{ key }}" name="weekday"{% if invalid %} aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}{% if first_error == key %} autofocus{% endif %}>
+            <option value="">—</option>
+            {% for value, text in weekdays %}
+            <option value="{{ value }}"{% if row.weekday == value | string %} selected{% endif %}>{{ text }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="start_time_{{ loop.index }}">Start</label>
+          <input id="start_time_{{ loop.index }}" name="start_time" type="time" step="1800" value="{{ row.start }}"{% if invalid %} aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}>
+        </div>
+        <div class="field">
+          <label for="end_time_{{ loop.index }}">End</label>
+          <input id="end_time_{{ loop.index }}" name="end_time" type="time" step="1800" value="{{ row.end }}"{% if invalid %} aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}>
+        </div>
+      </div>
+    </fieldset>
+    {% endfor %}
+  </fieldset>
+  <div class="actions">
+    <button type="submit">Register doctor</button>
+    <a href="/doctors">Cancel</a>
+  </div>
+</form>
+{% endblock %}

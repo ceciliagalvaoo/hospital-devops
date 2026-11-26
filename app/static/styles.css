@@ -36,6 +36,7 @@ a {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 main:focus-visible,
 .results:focus-visible {
   outline: 3px solid var(--focus);
@@ -129,7 +130,9 @@ input[type="text"],
 input[type="password"],
 input[type="date"],
 input[type="tel"],
-input[type="email"] {
+input[type="email"],
+input[type="time"],
+select {
   width: 100%;
   padding: 0.6rem 0.75rem;
   font: inherit;
@@ -331,4 +334,58 @@ th {
 
 .record dd {
   margin: 0;
+}
+
+.availability {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+}
+
+.availability > legend {
+  font-weight: 600;
+}
+
+.availability p {
+  margin: 0;
+}
+
+.range {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+}
+
+.range legend {
+  color: var(--muted);
+}
+
+.range-fields {
+  display: grid;
+  grid-template-columns: minmax(9.5rem, 1.3fr) 1fr 1fr;
+  gap: 0.5rem;
+}
+
+@media (max-width: 30rem) {
+  .range-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.range.invalid select,
+.range.invalid input {
+  border: 2px solid var(--error);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
