@@ -58,7 +58,7 @@ The image is **built once and promoted**: the image that passed the checks of a 
 | Event | Workflow and job | What happens | Names | `org.opencontainers.image.version` |
 | --- | --- | --- | --- | --- |
 | Pull request | CI | built and tested, never published | — | `0.0.0` |
-| Push to `main` (a merged pull request) | CI: `Container`, then `Publish` | `Container` builds the image once and runs the smoke tests against it; after the four required checks passed, `Publish` pushes that same image and names it | `sha-<commit>`, `X.Y.Z-dev.N`, `dev` | `X.Y.Z-dev.N`, for example `0.3.0-dev.72` |
+| Push to `main` (a merged pull request) | CI: `Container`, then `Publish` | `Container` builds the image once and runs the smoke tests and the black-box HTTP journeys (#217) against it; after the four required checks passed, `Publish` pushes that same image and names it | `sha-<commit>`, `X.Y.Z-dev.N`, `dev` | `X.Y.Z-dev.N`, for example `0.3.0-dev.72` |
 | Tag `vX.Y.Z-rc.N` | Release: `Promote` (environment `test`) | adds names to the tested image of the tagged commit, without building | `X.Y.Z-rc.N`, `rc` | unchanged: the dev version of the build |
 | Tag `vX.Y.Z` | Release: `Promote` (environment `production`, after approval) | the same promotion | `X.Y.Z`, `X.Y`, `latest` | unchanged: the dev version of the build |
 
