@@ -4,8 +4,15 @@ from datetime import time
 
 import pytest
 
-from app.doctors import MESSAGES, WeeklyRange, validate_availability
-from app.models import Weekday
+from app.doctors import (
+    MESSAGES,
+    DoctorUpdate,
+    InvalidDoctor,
+    WeeklyRange,
+    validate_availability,
+    validate_doctor_update,
+)
+from app.models import Specialisation, Weekday
 
 
 def check(*rows):
@@ -105,3 +112,39 @@ def test_every_invalid_row_is_reported_at_once_in_row_order():
         "availability_4": MESSAGES["range_time"],
     }
     assert list(errors) == ["availability_2", "availability_3", "availability_4"]  # row order
+
+
+# ---------------------------------------------------------------- updates (T-13.1)
+
+
+def test_an_update_applies_the_same_rules_as_registration():
+    update = validate_doctor_update(
+        " Dr Updated ", "neurology", ["4", "", "4"], ["09:00", "", "13:00"], ["12:00", "", "17:30"]
+    )
+
+    assert update == DoctorUpdate(
+        "Dr Updated",
+        Specialisation.NEUROLOGY,
+        [
+            WeeklyRange(Weekday.FRIDAY, time(9), time(12)),
+            WeeklyRange(Weekday.FRIDAY, time(13), time(17, 30)),
+        ],
+    )
+
+
+def test_every_invalid_field_of_an_update_is_reported():
+    with pytest.raises(InvalidDoctor) as raised:
+        validate_doctor_update("", "astrology", ["0", "0"], ["08:00", "10:00"], ["12:00", "11:00"])
+
+    assert raised.value.errors == {
+        "full_name": MESSAGES["name_missing"],
+        "specialisation": MESSAGES["specialisation_invalid"],
+        "availability_2": MESSAGES["range_overlap"],
+    }
+
+
+def test_an_update_still_needs_one_range():
+    with pytest.raises(InvalidDoctor) as raised:
+        validate_doctor_update("Dr Updated", "neurology", [], [], [])
+
+    assert raised.value.errors == {"availability": MESSAGES["availability_missing"]}

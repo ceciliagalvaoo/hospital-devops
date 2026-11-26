@@ -1,4 +1,4 @@
-"""JSON API for doctor profiles: registration (US-02).
+"""JSON API for doctor profiles: registration (US-02) and updates (US-13).
 
 Administrators only, following the RBAC matrix (docs/requirements.md §2.2); receptionists and
 doctors receive HTTP 403.
@@ -6,12 +6,18 @@ doctors receive HTTP 403.
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status
 from fastapi.responses import JSONResponse
 from starlette.responses import Response
 
 from app.access import DbSession, require_roles
-from app.doctors import InvalidDoctor, register_doctor, validate_doctor
+from app.doctors import (
+    InvalidDoctor,
+    register_doctor,
+    update_doctor,
+    validate_doctor,
+    validate_doctor_update,
+)
 from app.models import Doctor, Role, StaffAccount
 
 router = APIRouter(prefix="/api/doctors", tags=["doctors"])
@@ -69,3 +75,32 @@ def register(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         )
     return doctor_response(register_doctor(db, details))
+
+
+@router.post("/{doctor_id}", response_model=None)
+def update(
+    db: DbSession,
+    account: Administrator,
+    doctor_id: int,
+    full_name: Annotated[str, Form()] = "",
+    specialisation: Annotated[str, Form()] = "",
+    weekday: Annotated[list[str] | None, Form()] = None,
+    start_time: Annotated[list[str] | None, Form()] = None,
+    end_time: Annotated[list[str] | None, Form()] = None,
+) -> dict | Response:
+    """Update a doctor's name, specialisation and weekly availability, which replaces the
+    previous ranges; the staff account and the status do not change. Invalid data returns
+    HTTP 422 and changes nothing; an unknown doctor returns HTTP 404."""
+    doctor = db.get(Doctor, doctor_id)
+    if doctor is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not Found")
+    try:
+        changes = validate_doctor_update(
+            full_name, specialisation, weekday or [], start_time or [], end_time or []
+        )
+    except InvalidDoctor as invalid:
+        return JSONResponse(
+            {"detail": INVALID_DOCTOR, "errors": invalid.errors},
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        )
+    return doctor_response(update_doctor(db, doctor, changes))
