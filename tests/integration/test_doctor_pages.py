@@ -1,6 +1,8 @@
-"""Integration tests for the doctors area, the registration form and the profile (T-02.3).
+"""Integration tests for the doctors area, the registration form and the profile (T-02.3),
+and the doctor-edit form (T-13.2).
 
-Synthetic data only. The acceptance and access tests of US-02 are T-02.4 (#58).
+Synthetic data only. The acceptance and access tests of US-02 are T-02.4 (#58), those of US-13
+T-13.3 (#64).
 """
 
 import re
@@ -270,7 +272,14 @@ def test_unknown_doctor_profiles_are_not_found(client, administrator, path):
 @pytest.mark.parametrize("role", [Role.RECEPTIONIST, Role.DOCTOR])
 @pytest.mark.parametrize(
     ("method", "path"),
-    [("GET", "/doctors"), ("GET", "/doctors/new"), ("POST", "/doctors/new"), ("GET", "/doctors/1")],
+    [
+        ("GET", "/doctors"),
+        ("GET", "/doctors/new"),
+        ("POST", "/doctors/new"),
+        ("GET", "/doctors/1"),
+        ("GET", "/doctors/1/edit"),
+        ("POST", "/doctors/1/edit"),
+    ],
 )
 def test_only_administrators_open_the_doctor_pages(client, db_session, role, method, path):
     log_in(client, db_session, role)
@@ -280,3 +289,145 @@ def test_only_administrators_open_the_doctor_pages(client, db_session, role, met
 
     assert response.status_code == 403
     assert "Access denied" in response.text
+
+
+# ---------------------------------------------------------------- edit form (T-13.2)
+
+
+@pytest.fixture
+def doctor(db_session) -> Doctor:
+    profile = Doctor(
+        account=account(db_session, "synthetic.doctor"),
+        full_name="Dr Synthetic",
+        specialisation=Specialisation.CARDIOLOGY,
+    )
+    profile.availability = [
+        AvailabilityRange(weekday=Weekday.WEDNESDAY, start_time=time(14), end_time=time(18)),
+        AvailabilityRange(weekday=Weekday.MONDAY, start_time=time(8), end_time=time(12)),
+    ]
+    db_session.add(profile)
+    db_session.commit()
+    return profile
+
+
+def submit_edit(client, doctor: Doctor, data: dict):
+    token = form_token(client.get("/login").text)
+    return client.post(
+        f"/doctors/{doctor.id}/edit", data=data | {"csrf_token": token}, follow_redirects=False
+    )
+
+
+EDIT = {
+    "full_name": "Dr Updated Synthetic",
+    "specialisation": "neurology",
+    "weekday": ["4", "", "4"],
+    "start_time": ["13:00", "", "09:00"],
+    "end_time": ["17:30", "", "12:00"],
+}
+
+
+def test_the_profile_links_to_the_edit_form(client, administrator, doctor):
+    html = client.get(f"/doctors/{doctor.id}").text
+
+    assert f'<a href="/doctors/{doctor.id}/edit">Edit doctor details</a>' in html
+    assert "Doctor details saved." not in html
+
+
+def test_the_edit_form_shows_the_current_details_and_ranges(client, administrator, doctor):
+    response = client.get(f"/doctors/{doctor.id}/edit")
+
+    html = response.text
+    assert response.status_code == 200
+    assert "<title>Edit doctor details" in html
+    assert "Dr Synthetic, staff account" in text_of(html)
+    assert "The staff account cannot be changed." in text_of(html)
+    assert 'name="staff_account_id"' not in html
+    assert 'value="Dr Synthetic"' in tag(html, "input", "full_name")
+    assert "autofocus" in tag(html, "input", "full_name")
+    assert selected(html, "specialisation") == "cardiology"
+    # The ranges in the order of the profile (day, then time), then empty rows up to six.
+    assert [selected(html, f"availability_{n}") for n in range(1, 7)] == [
+        "0",
+        "2",
+        None,
+        None,
+        None,
+        None,
+    ]
+    assert 'value="08:00"' in tag(html, "input", "start_time_1")
+    assert 'value="18:00"' in tag(html, "input", "end_time_2")
+    assert 'value=""' in tag(html, "input", "start_time_3")
+    assert f'action="/doctors/{doctor.id}/edit"' in html
+    assert f'<a href="/doctors/{doctor.id}">Cancel</a>' in html
+
+
+def test_more_ranges_than_rows_are_all_shown(client, db_session, administrator, doctor):
+    doctor.availability = [
+        AvailabilityRange(weekday=day, start_time=time(8), end_time=time(12)) for day in Weekday
+    ]
+    db_session.commit()
+
+    html = client.get(f"/doctors/{doctor.id}/edit").text
+
+    assert [selected(html, f"availability_{n}") for n in range(1, 8)] == [str(d) for d in range(7)]
+    assert 'id="availability_8"' not in html
+
+
+def test_saving_shows_the_profile_with_a_confirmation(client, db_session, administrator, doctor):
+    response = submit_edit(client, doctor, EDIT)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/doctors/{doctor.id}?updated=1"
+    page = text_of(client.get(response.headers["location"]).text)
+    assert "Doctor details saved." in page
+    assert "Doctor registered" not in page
+    assert "Dr Updated Synthetic" in page
+    assert "Specialisation Neurology Staff account synthetic.doctor Status Active" in page
+    assert "Friday 09:00 12:00 Friday 13:00 17:30" in page
+    assert "Monday" not in page
+
+
+def test_invalid_changes_keep_the_values_and_identify_every_field_and_row(
+    client, db_session, administrator, doctor
+):
+    data = EDIT | {"full_name": "", "end_time": ["17:30", "", "14:00"]}  # 09:00-14:00 overlaps
+
+    response = submit_edit(client, doctor, data)
+
+    html = response.text
+    assert response.status_code == 422
+    assert "<title>Error: Edit doctor details" in html
+    assert "The changes were not saved. Check these fields:" in html
+    assert escape(MESSAGES["name_missing"]) in html
+    assert escape(MESSAGES["range_overlap"]) in html
+    assert "autofocus" in tag(html, "input", "full_name")
+    # The rows come back as submitted, including the empty one between them.
+    assert [selected(html, f"availability_{n}") for n in range(1, 4)] == ["4", None, "4"]
+    assert 'value="14:00"' in tag(html, "input", "end_time_3")
+    assert (
+        f'<p class="field-error" id="availability_3-error">{escape(MESSAGES["range_overlap"])}'
+        in html
+    )
+    assert selected(html, "specialisation") == "neurology"
+    db_session.expire_all()
+    assert doctor.full_name == "Dr Synthetic"
+    assert len(doctor.availability) == 2
+
+
+def test_removing_every_range_is_refused_at_the_availability(
+    client, db_session, administrator, doctor
+):
+    data = EDIT | {"weekday": [""], "start_time": [""], "end_time": [""]}
+
+    response = submit_edit(client, doctor, data)
+
+    assert response.status_code == 422
+    assert escape(MESSAGES["availability_missing"]) in response.text
+    assert "autofocus" in tag(response.text, "select", "availability_1")
+
+
+@pytest.mark.parametrize("path", ["/doctors/999999/edit", "/doctors/abc/edit"])
+def test_unknown_doctors_have_no_edit_form(client, administrator, path):
+    assert client.get(path).status_code == 404
+    token = form_token(client.get("/login").text)
+    assert client.post(path, data={"csrf_token": token}).status_code == 404
