@@ -34,6 +34,7 @@ AREAS = (
         frozenset({Role.ADMINISTRATOR}),
         "Register, update and deactivate doctors.",
         "US-02, US-13, US-16",
+        placeholder=False,  # app/routes/doctor_pages.py (US-02)
     ),
     Area(
         "/appointments",
