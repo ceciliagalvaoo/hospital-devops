@@ -3,6 +3,8 @@
 {% block content %}
 {% if created %}
 <p class="message notice" role="status">Account {{ created.login }} created with the role {{ created.role.value }}.</p>
+{% elif deactivated %}
+<p class="message notice" role="status">Account {{ deactivated.login }} deactivated. It can no longer log in.</p>
 {% endif %}
 <h1>Staff accounts</h1>
 <p><a href="/staff/new">Create a staff account</a></p>
@@ -10,14 +12,16 @@
   <p id="accounts-summary">{{ accounts | length }} account{{ "" if accounts | length == 1 else "s" }}.</p>
   <table>
     <thead>
-      <tr><th scope="col">Login</th><th scope="col">Role</th><th scope="col">Status</th></tr>
+      <tr><th scope="col">Login</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Action</th></tr>
     </thead>
     <tbody>
       {% for item in accounts %}
-      <tr{% if created and item.id == created.id %} class="highlight"{% endif %}>
+      {% set highlighted = (created and item.id == created.id) or (deactivated and item.id == deactivated.id) %}
+      <tr{% if highlighted %} class="highlight"{% endif %}>
         <td>{{ item.login }}</td>
         <td>{{ item.role.value | capitalize }}</td>
         <td>{{ "Active" if item.is_active else "Inactive" }}</td>
+        <td>{% if item.id == account.id %}Your account{% elif item.is_active %}<a href="/staff/{{ item.id }}/deactivate" aria-label="Deactivate {{ item.login }}">Deactivate</a>{% else %}—{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>

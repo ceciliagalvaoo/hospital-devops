@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{% if refused %}Error: {% endif %}Deactivate {{ target.login }}{% endblock %}
+{% block content %}
+<h1>Deactivate {{ target.login }}</h1>
+{% if refused %}
+<p class="message error" role="alert">{{ refused }}</p>
+<p class="actions"><a href="/staff">Back to staff accounts</a></p>
+{% elif not target.is_active %}
+<p class="message notice" role="status">The account {{ target.login }} is already inactive.</p>
+<p class="actions"><a href="/staff">Back to staff accounts</a></p>
+{% else %}
+<div class="card">
+  <p>Deactivate the {{ target.role.value }} account <strong>{{ target.login }}</strong>?</p>
+  <ul>
+    <li>It can no longer log in.</li>
+    <li>Anyone using it now is logged out at once.</li>
+    <li>The account and the records that refer to it are kept.</li>
+  </ul>
+  <form method="post" action="/staff/{{ target.id }}/deactivate">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="actions">
+      <button type="submit" autofocus>Deactivate account</button>
+      <a href="/staff">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
