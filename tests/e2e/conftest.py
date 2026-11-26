@@ -135,3 +135,14 @@ def unlinked_doctor_account(db_engine: Engine) -> E2EAccount:
         session.execute(delete(Doctor).where(Doctor.staff_account_id == staff_id))
         session.execute(delete(StaffAccount).where(StaffAccount.id == staff_id))
         session.commit()
+
+
+@pytest.fixture
+def new_account_login(db_engine: Engine):
+    """A unique login for an account that the test creates through the pages. The account
+    is deleted afterwards; its sessions are deleted with it."""
+    login = f"e2e.new.{uuid.uuid4().hex[:8]}"
+    yield login
+    with Session(db_engine) as session:
+        session.execute(delete(StaffAccount).where(StaffAccount.login == login))
+        session.commit()
