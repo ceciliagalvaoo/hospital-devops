@@ -134,7 +134,8 @@ Each entry records the completed work, the next action and any blockers.
   - US-10 (2 points) closed on 2026-11-18 after every criterion was checked, with the image `sha-c062e8d` (`0.3.0-dev.111`) published and verified; week 1 ended with 7 of 23 points and every planned item done.
   - No work was done from 2026-11-19 to 2026-11-25, so week 2 starts today with 16 points and 21 pull requests left before the review on 2026-11-28. The Product Owner kept the sprint scope and set the order by value: US-02 (P1), then the Lab 7 tasks #217 and #219, then US-14, US-13 and US-15. Whatever is not done by the review returns to the backlog there.
   - #55 T-02.1, the `doctors` and `doctor_availability` tables (migration `0005`). The Product Owner decided the open points of the doctor stories: a doctor profile is linked to an existing doctor account (one per account), the specialisation comes from a fixed list, and the availability is a set of weekly ranges (weekday, start and end time).
-- **Next:** #56 T-02.2, doctor registration with availability validation.
+  - #56 T-02.2, doctor registration: `POST /api/doctors` for administrators (receptionists and doctors HTTP 403). The account must be an active doctor account without a profile; the name and a specialisation from the list are required; the availability needs at least one weekly range on the half hour, with the end after the start and no overlap on the same day, and each invalid range is reported by its row, in row order.
+- **Next:** #57 T-02.3, the doctor registration form and availability inputs.
 - **Blockers:** none. The local test environment had been removed with the session's temporary files and was recreated from `requirements-dev.txt`.
 
 ## 3. Increment
