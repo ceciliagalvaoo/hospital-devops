@@ -28,6 +28,7 @@ HTML = {"Accept": "text/html"}
 STATE_CHANGING_ROUTES = [
     ("POST", "/api/doctors"),
     ("POST", "/api/patients"),
+    ("POST", "/api/staff"),
     ("POST", "/api/patients/{patient_id}/contacts"),
     ("POST", "/auth/login"),
     ("POST", "/auth/logout"),

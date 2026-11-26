@@ -1,6 +1,6 @@
 # Accounts, sessions and access control
 
-**Staff accounts** have a unique login, one of the roles `receptionist`, `doctor` or `administrator` (enforced by a database check constraint) and an active flag. Passwords are stored only as bcrypt hashes with a cost factor of 12 (NFR-03 requires at least 10). bcrypt uses at most 72 bytes of a password, so longer passwords are rejected instead of being silently truncated.
+**Staff accounts** have a unique login, one of the roles `receptionist`, `doctor` or `administrator` (enforced by a database check constraint) and an active flag. Passwords are stored only as bcrypt hashes with a cost factor of 12 (NFR-03 requires at least 10). bcrypt uses at most 72 bytes of a password, so longer passwords are rejected instead of being silently truncated. Logins are stored in lower case and compared in lower case at login, so `Dev.Doctor` and `dev.doctor` are the same account (decided in the Sprint 2 planning after the Sprint 1 review); a login has 3 to 64 letters, digits, dots, hyphens or underscores and starts with a letter or a digit. Administrators create accounts with `POST /api/staff` (US-14); a new password needs at least 12 characters.
 
 **Log in and out** through the authentication endpoints:
 
