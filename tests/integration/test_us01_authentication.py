@@ -33,6 +33,7 @@ STATE_CHANGING_ROUTES = [
     ("POST", "/auth/logout"),
     ("POST", "/login"),
     ("POST", "/logout"),
+    ("POST", "/doctors/new"),
     ("POST", "/patients/new"),
     ("POST", "/patients/{patient_id:int}/contacts"),
 ]
