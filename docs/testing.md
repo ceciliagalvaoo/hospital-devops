@@ -46,7 +46,7 @@ Legend: test files of delivered stories are named; for the other stories the pla
 | **US-10** Edit patient contact details | contact rules in `test_patient_rules.py` | `test_patient_contacts.py`, `test_patient_contacts_page.py`, `test_us10_contact_update.py` | n/a (J) | `test_edit_contacts_and_reload.py` | n/a: the form reuses the fields, messages and summary checked in US-03 |
 | **US-11** Update an appointment | n/a: reuses the validator of T-04.8 | T-11.3 (A) | n/a (J) | T-11.4 (A) | n/a: reuses the booking form checked in T-04.7 |
 | **US-12** Cancel an appointment | n/a (R) | T-12.3 (A) | n/a (J) | T-12.4 (A) | n/a: a single confirmation action |
-| **US-13** Update doctor details | n/a: reuses the availability rules unit-tested for US-02 | T-13.3 (A) | n/a (J) | T-13.4 (A) | n/a: reuses the availability inputs checked in T-02.6 |
+| **US-13** Update doctor details | `test_doctor_rules.py` (the rules shared with US-02) | `test_doctor_update.py`, `test_doctor_pages.py`, `test_us13_doctor_update.py` | n/a (J) | T-13.4 (A) | n/a: reuses the availability inputs checked in T-02.6 |
 | **US-14** Create staff accounts | `test_account_rules.py` | `test_staff_account_creation.py`, `test_staff_pages.py`, `test_us14_staff_account_creation.py` | n/a (J) | `test_create_account_and_log_in.py` | n/a: a short form; login wording is checked in US-01 |
 | **US-15** Deactivate a staff account | n/a (R) | T-15.3 (A) | n/a (J) | T-15.4 (A) | n/a: a single action whose effect (refused login) is automated |
 | **US-16** Deactivate a doctor | n/a (R) | T-16.3 (A), T-16.4 (A) | n/a (J) | T-16.5 (A) | n/a: a single action |
