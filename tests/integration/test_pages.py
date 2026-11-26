@@ -23,7 +23,7 @@ ALLOWED = {
     Role.ADMINISTRATOR: ["/patients", "/doctors", "/appointments", "/staff"],
 }
 AREA_PATHS = ["/patients", "/doctors", "/appointments", "/records", "/staff"]
-DELIVERED_AREAS = {"/patients", "/doctors"}
+DELIVERED_AREAS = {"/patients", "/doctors", "/staff"}
 ACCESS_CASES = [(path, role) for path in AREA_PATHS for role in Role]
 
 
