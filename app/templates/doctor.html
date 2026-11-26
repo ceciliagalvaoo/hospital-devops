@@ -3,6 +3,8 @@
 {% block content %}
 {% if registered %}
 <p class="message notice" role="status">Doctor registered and linked to the account {{ doctor.account.login }}.</p>
+{% elif updated %}
+<p class="message notice" role="status">Doctor details saved.</p>
 {% endif %}
 <h1>{{ doctor.full_name }}</h1>
 <dl class="card record">
@@ -31,5 +33,5 @@
     </tbody>
   </table>
 </div>
-<p class="actions"><a href="/doctors/new">Register another doctor</a> <a href="/doctors">Back to doctors</a></p>
+<p class="actions"><a href="/doctors/{{ doctor.id }}/edit">Edit doctor details</a> <a href="/doctors/new">Register another doctor</a> <a href="/doctors">Back to doctors</a></p>
 {% endblock %}
