@@ -30,6 +30,7 @@ STATE_CHANGING_ROUTES = [
     ("POST", "/api/doctors/{doctor_id}"),
     ("POST", "/api/patients"),
     ("POST", "/api/staff"),
+    ("POST", "/api/staff/{account_id}/deactivate"),
     ("POST", "/api/patients/{patient_id}/contacts"),
     ("POST", "/auth/login"),
     ("POST", "/auth/logout"),
