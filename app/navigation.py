@@ -56,6 +56,7 @@ AREAS = (
         frozenset({Role.ADMINISTRATOR}),
         "Create and deactivate staff accounts.",
         "US-14, US-15",
+        placeholder=False,  # app/routes/staff_pages.py (US-14)
     ),
 )
 

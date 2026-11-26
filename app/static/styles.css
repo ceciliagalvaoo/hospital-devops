@@ -389,3 +389,7 @@ th {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+tr.highlight {
+  background: var(--notice-background);
+}

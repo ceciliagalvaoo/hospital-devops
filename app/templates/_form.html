@@ -1,11 +1,11 @@
 {# Form macros shared by the forms: labelled fields and selects with their hint and error,
    and the error summary linked to the fields. #}
-{% macro field(name, label, type, values, errors, hint=None, required=False, autofocus=False, attrs="") %}
+{% macro field(name, label, type, values, errors, hint=None, required=False, autofocus=False, attrs="", autocomplete="off") %}
 <div class="field{% if errors[name] %} invalid{% endif %}">
   <label for="{{ name }}">{{ label }}{% if required %} <span class="required">(required)</span>{% endif %}</label>
   {% if hint %}<p class="hint" id="{{ name }}-hint">{{ hint }}</p>{% endif %}
   {% if errors[name] %}<p class="field-error" id="{{ name }}-error">{{ errors[name] }}</p>{% endif %}
-  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}" autocomplete="off"
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}" autocomplete="{{ autocomplete }}"
     {%- if required %} aria-required="true"{% endif %}
     {%- if errors[name] %} aria-invalid="true"{% endif %}
     {%- if hint or errors[name] %} aria-describedby="{% if hint %}{{ name }}-hint{% endif %}{% if hint and errors[name] %} {% endif %}{% if errors[name] %}{{ name }}-error{% endif %}"{% endif %}
