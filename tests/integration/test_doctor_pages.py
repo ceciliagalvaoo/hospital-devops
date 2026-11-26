@@ -113,7 +113,7 @@ def test_area_lists_the_doctors_by_name(client, db_session, administrator):
             Doctor(account=account(db_session, login), full_name=name, specialisation=speciality)
         )
     db_session.commit()
-    ana = db_session.scalars(select(Doctor).where(Doctor.full_name == "Dr Ana Synthetic")).one()
+    ana, bruno = db_session.scalars(select(Doctor).order_by(Doctor.full_name)).all()
 
     page = client.get("/doctors").text
 
@@ -123,7 +123,9 @@ def test_area_lists_the_doctors_by_name(client, db_session, administrator):
         "Dr Ana Synthetic General practice synthetic.doctor.a Active",
         "Dr Bruno Synthetic Neurology synthetic.doctor.b Active",
     ]
+    # Each name links to its own profile, not only the first one.
     assert f'<a href="/doctors/{ana.id}">Dr Ana Synthetic</a>' in page
+    assert f'<a href="/doctors/{bruno.id}">Dr Bruno Synthetic</a>' in page
 
 
 # ---------------------------------------------------------------- registration form
