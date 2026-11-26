@@ -11,16 +11,25 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass
+from datetime import time as clock
 
 import pytest
 import uvicorn
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app import db
 from app.main import app
-from app.models import Doctor, Patient, Role, StaffAccount
+from app.models import (
+    AvailabilityRange,
+    Doctor,
+    Patient,
+    Role,
+    Specialisation,
+    StaffAccount,
+    Weekday,
+)
 from tests.database import get_test_database_url
 
 PASSWORD = "synthetic-e2e-password"
@@ -146,3 +155,23 @@ def new_account_login(db_engine: Engine):
     with Session(db_engine) as session:
         session.execute(delete(StaffAccount).where(StaffAccount.login == login))
         session.commit()
+
+
+@pytest.fixture
+def doctor_profile(unlinked_doctor_account: E2EAccount, db_engine: Engine) -> int:
+    """A synthetic doctor profile with two weekly ranges, for one test; return its id. The
+    profile and its account are deleted by ``unlinked_doctor_account``."""
+    with Session(db_engine) as session:
+        staff = session.scalar(
+            select(StaffAccount).where(StaffAccount.login == unlinked_doctor_account.login)
+        )
+        doctor = Doctor(
+            account=staff, full_name="Dr Synthetic Edit", specialisation=Specialisation.CARDIOLOGY
+        )
+        doctor.availability = [
+            AvailabilityRange(weekday=Weekday.MONDAY, start_time=clock(8), end_time=clock(12)),
+            AvailabilityRange(weekday=Weekday.WEDNESDAY, start_time=clock(14), end_time=clock(18)),
+        ]
+        session.add(doctor)
+        session.commit()
+        return doctor.id

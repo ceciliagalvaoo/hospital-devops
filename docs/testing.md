@@ -2,7 +2,7 @@
 
 The test plan of `hospital-devops` (Lab 7, Task 6.1, 6.4 and 6.6, #219): which tests verify each user story, where each kind of test runs, the pipeline that runs them, the thresholds and an example of a failed and fixed run. How to run the tests locally is in [development/testing.md](development/testing.md); the test maps and manual checklists of the delivered stories are in [testing/](testing/).
 
-State on 2026-11-26: US-01, US-22, US-23 and US-24 (Sprint 1) and US-02, US-03, US-09, US-10 and US-14 (Sprint 2) are delivered and their tests exist; the other stories list the test tasks planned in [tasks.md](tasks.md).
+State on 2026-11-26: US-01, US-22, US-23 and US-24 (Sprint 1) and US-02, US-03, US-09, US-10, US-13 and US-14 (Sprint 2) are delivered and their tests exist; the other stories list the test tasks planned in [tasks.md](tasks.md).
 
 ## 1. Test types
 
@@ -46,7 +46,7 @@ Legend: test files of delivered stories are named; for the other stories the pla
 | **US-10** Edit patient contact details | contact rules in `test_patient_rules.py` | `test_patient_contacts.py`, `test_patient_contacts_page.py`, `test_us10_contact_update.py` | n/a (J) | `test_edit_contacts_and_reload.py` | n/a: the form reuses the fields, messages and summary checked in US-03 |
 | **US-11** Update an appointment | n/a: reuses the validator of T-04.8 | T-11.3 (A) | n/a (J) | T-11.4 (A) | n/a: reuses the booking form checked in T-04.7 |
 | **US-12** Cancel an appointment | n/a (R) | T-12.3 (A) | n/a (J) | T-12.4 (A) | n/a: a single confirmation action |
-| **US-13** Update doctor details | `test_doctor_rules.py` (the rules shared with US-02) | `test_doctor_update.py`, `test_doctor_pages.py`, `test_us13_doctor_update.py` | n/a (J) | T-13.4 (A) | n/a: reuses the availability inputs checked in T-02.6 |
+| **US-13** Update doctor details | `test_doctor_rules.py` (the rules shared with US-02) | `test_doctor_update.py`, `test_doctor_pages.py`, `test_us13_doctor_update.py` | n/a (J) | `test_edit_doctor_and_reload.py` | n/a: reuses the availability inputs checked in T-02.6 |
 | **US-14** Create staff accounts | `test_account_rules.py` | `test_staff_account_creation.py`, `test_staff_pages.py`, `test_us14_staff_account_creation.py` | n/a (J) | `test_create_account_and_log_in.py` | n/a: a short form; login wording is checked in US-01 |
 | **US-15** Deactivate a staff account | n/a (R) | T-15.3 (A) | n/a (J) | T-15.4 (A) | n/a: a single action whose effect (refused login) is automated |
 | **US-16** Deactivate a doctor | n/a (R) | T-16.3 (A), T-16.4 (A) | n/a (J) | T-16.5 (A) | n/a: a single action |
