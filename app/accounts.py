@@ -1,4 +1,5 @@
-"""Staff account creation rules (US-14), shared by the JSON API and the pages.
+"""Staff account creation (US-14) and deactivation (US-15) rules, shared by the JSON API and
+the pages.
 
 Logins are normalised to lower case, here and at login (app/auth.py), so "Dev.Doctor" and
 "dev.doctor" are the same account (decided in the Sprint 2 planning after the Sprint 1
@@ -8,11 +9,11 @@ review). Every invalid field is reported at once.
 import re
 from dataclasses import dataclass
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models import Role, StaffAccount
+from app.models import Role, StaffAccount, StaffSession
 from app.security import MAX_PASSWORD_BYTES
 
 LOGIN_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{2,63}$")  # 3 to 64 characters
@@ -102,4 +103,30 @@ def create_account(db: Session, details: AccountDetails) -> StaffAccount:
     except IntegrityError as error:
         db.rollback()
         raise InvalidAccount({"login": MESSAGES["login_taken"]}) from error
+    return account
+
+
+OWN_ACCOUNT = "You cannot deactivate your own account. Another administrator can deactivate it."
+
+
+class CannotDeactivate(ValueError):
+    """A deactivation that is not allowed; ``message`` says why."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+def deactivate_account(db: Session, account: StaffAccount, by: StaffAccount) -> StaffAccount:
+    """Deactivate ``account`` (US-15). It is kept, never deleted, so the records that refer to
+    it stay intact; it can no longer log in, and its sessions are deleted, so requests through
+    them are rejected at once. Deactivating an inactive account changes nothing.
+
+    Administrators cannot deactivate their own account: this keeps at least one active
+    administrator, who can still create and deactivate accounts."""
+    if account.id == by.id:
+        raise CannotDeactivate(OWN_ACCOUNT)
+    account.is_active = False
+    db.execute(delete(StaffSession).where(StaffSession.staff_account_id == account.id))
+    db.commit()
     return account
