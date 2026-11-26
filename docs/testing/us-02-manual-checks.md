@@ -8,7 +8,7 @@ Manual test cases of T-02.6 (#60): the labels of the doctor registration form, i
 | --- | --- |
 | Date | 2026-11-26 |
 | Tester | Cecília Galvão |
-| Application version | `main` at `e9584b1` (after #59) |
+| Application version | `main` at `7791555` (after #59; the same commit was `e9584b1` before the history rewrite of 2026-11-26) |
 | Browser and version | Google Chrome 158.0.8127.38 |
 | Operating system | Windows 11 Pro 25H2, build 26200.9974 |
 | Screen | 1920 × 1080 at 150 % scaling (1280 × 720 effective), one monitor |

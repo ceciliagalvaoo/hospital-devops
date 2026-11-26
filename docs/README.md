@@ -15,7 +15,7 @@ Index of the project documentation. The [README](../README.md) has the project o
 - [Project management on GitHub](github-project.md): the GitHub Project, labels, fields, status workflow and WIP limits, views, automation, branch names and dependencies.
 - Sprint records: [Sprint 1](sprints/sprint-1.md), [Sprint 2](sprints/sprint-2.md).
 - [Test plan](testing.md): the tests of every user story, the test types, the pipeline, the thresholds and a failed and fixed run.
-- Test records: [US-01 automated tests](testing/us-01-automated-tests.md), [US-01 manual checks](testing/us-01-manual-checks.md), [US-02 automated tests](testing/us-02-automated-tests.md), [US-02 manual checks](testing/us-02-manual-checks.md), [US-03 automated tests](testing/us-03-automated-tests.md), [US-03 manual checks](testing/us-03-manual-checks.md), [US-09 automated tests](testing/us-09-automated-tests.md), [US-10 automated tests](testing/us-10-automated-tests.md), [US-23 manual checks](testing/us-23-manual-checks.md), [US-24 manual checks](testing/us-24-manual-checks.md).
+- Test records: [US-01 automated tests](testing/us-01-automated-tests.md), [US-01 manual checks](testing/us-01-manual-checks.md), [US-02 automated tests](testing/us-02-automated-tests.md), [US-02 manual checks](testing/us-02-manual-checks.md), [US-03 automated tests](testing/us-03-automated-tests.md), [US-03 manual checks](testing/us-03-manual-checks.md), [US-09 automated tests](testing/us-09-automated-tests.md), [US-10 automated tests](testing/us-10-automated-tests.md), [US-14 automated tests](testing/us-14-automated-tests.md), [US-23 manual checks](testing/us-23-manual-checks.md), [US-24 manual checks](testing/us-24-manual-checks.md).
 
 ## Architecture
 

@@ -7,7 +7,7 @@ Manual test case of T-24.4 (#149): pull requests cannot publish release images, 
 | | |
 | --- | --- |
 | Date | 2026-11-07 |
-| Testers | Cecília Galvão (P1, P6, in the GitHub interface); Claude Code on her machine (P2–P5, command line), reviewed by Cecília Galvão |
+| Testers | Cecília Galvão (P1 and P6 in the GitHub interface; P2–P5 run from the command line on her machine, which she reviewed) |
 | Image | `ghcr.io/ceciliagalvaoo/hospital-devops` |
 | `main` during the run | `4fcbce3` (merge of #213), published by run 42396037360 |
 | Pull requests checked | #211, #212, #213 |
