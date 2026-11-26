@@ -1,5 +1,7 @@
 # Testing and code quality
 
+The test plan, with the tests of every user story, the pipeline and the thresholds, is in [testing.md](../testing.md); this page explains how to run the tests.
+
 **Test** the application:
 
 ```bash
