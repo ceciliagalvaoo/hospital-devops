@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_form.html" import field, select_field, error_summary %}
+{% from "_availability.html" import availability_rows %}
+{% block title %}{% if errors %}Error: {% endif %}Edit doctor details{% endblock %}
+{% block content %}
+<h1>Edit doctor details</h1>
+<p>{{ doctor.full_name }}, staff account <span class="nowrap">{{ doctor.account.login }}</span>. The staff account cannot be changed.</p>
+{{ error_summary(errors, "The changes were not saved. Check these fields:") }}
+{% set first_error = (errors | list | first) if errors else "full_name" %}
+{% if first_error == "availability" %}{% set first_error = "availability_1" %}{% endif %}
+<form class="card patient-form" method="post" action="/doctors/{{ doctor.id }}/edit" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {{ field("full_name", "Full name", "text", values, errors, required=True, autofocus=first_error == "full_name", attrs='maxlength="120"') }}
+  {{ select_field("specialisation", "Specialisation", specialisations, values, errors, placeholder="Choose a specialisation…", required=True, autofocus=first_error == "specialisation") }}
+  {{ availability_rows(rows, weekdays, errors, first_error) }}
+  <div class="actions">
+    <button type="submit">Save changes</button>
+    <a href="/doctors/{{ doctor.id }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

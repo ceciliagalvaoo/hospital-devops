@@ -1,0 +1,35 @@
+{# The weekly availability rows of the doctor forms (US-02 registration, US-13 edit). #}
+{% macro availability_rows(rows, weekdays, errors, first_error) %}
+  <fieldset class="availability{% if errors.availability %} invalid{% endif %}" aria-describedby="availability-hint{% if errors.availability %} availability-error{% endif %}">
+    <legend id="availability">Weekly availability <span class="required">(required)</span></legend>
+    <p class="hint" id="availability-hint">At least one range. Times on the half hour, for example 08:00 or 13:30; ranges of the same day must not overlap. Leave unused rows empty.</p>
+    {% if errors.availability %}<p class="field-error" id="availability-error">{{ errors.availability }}</p>{% endif %}
+    {% for row in rows %}
+    {% set key = "availability_" ~ loop.index %}
+    {% set invalid = errors[key] %}
+    <fieldset class="range{% if invalid %} invalid{% endif %}">
+      <legend>Range {{ loop.index }}</legend>
+      {% if invalid %}<p class="field-error" id="{{ key }}-error">{{ invalid }}</p>{% endif %}
+      <div class="range-fields">
+        <div class="field">
+          <label for="{{ key }}">Weekday</label>
+          <select id="{{ key }}" name="weekday"{% if invalid %} aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}{% if first_error == key %} autofocus{% endif %}>
+            <option value="">—</option>
+            {% for value, text in weekdays %}
+            <option value="{{ value }}"{% if row.weekday == value | string %} selected{% endif %}>{{ text }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="start_time_{{ loop.index }}">Start</label>
+          <input id="start_time_{{ loop.index }}" name="start_time" type="time" step="1800" value="{{ row.start }}"{% if invalid %} aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}>
+        </div>
+        <div class="field">
+          <label for="end_time_{{ loop.index }}">End</label>
+          <input id="end_time_{{ loop.index }}" name="end_time" type="time" step="1800" value="{{ row.end }}"{% if invalid %} aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}>
+        </div>
+      </div>
+    </fieldset>
+    {% endfor %}
+  </fieldset>
+{% endmacro %}
