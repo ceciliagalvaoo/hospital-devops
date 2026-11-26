@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ doctor.full_name }}{% endblock %}
+{% block content %}
+{% if registered %}
+<p class="message notice" role="status">Doctor registered and linked to the account {{ doctor.account.login }}.</p>
+{% endif %}
+<h1>{{ doctor.full_name }}</h1>
+<dl class="card record">
+  <dt>Specialisation</dt>
+  <dd>{{ doctor.specialisation.label }}</dd>
+  <dt>Staff account</dt>
+  <dd data-testid="doctor-account">{{ doctor.account.login }}</dd>
+  <dt>Status</dt>
+  <dd>{{ "Active" if doctor.is_active else "Inactive" }}</dd>
+</dl>
+<h2>Weekly availability</h2>
+<div class="results" role="region" aria-labelledby="availability-heading" tabindex="0">
+  <table>
+    <caption id="availability-heading" class="visually-hidden">Weekly availability of {{ doctor.full_name }}</caption>
+    <thead>
+      <tr><th scope="col">Weekday</th><th scope="col">From</th><th scope="col">To</th></tr>
+    </thead>
+    <tbody>
+      {% for range in doctor.availability %}
+      <tr>
+        <td>{{ weekday_label(range.weekday) }}</td>
+        <td class="nowrap">{{ range.start_time.strftime("%H:%M") }}</td>
+        <td class="nowrap">{{ range.end_time.strftime("%H:%M") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="actions"><a href="/doctors/new">Register another doctor</a> <a href="/doctors">Back to doctors</a></p>
+{% endblock %}

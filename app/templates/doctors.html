@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Doctors{% endblock %}
+{% block content %}
+<h1>Doctors</h1>
+<p><a href="/doctors/new">Register a doctor</a></p>
+{% if doctors %}
+<div class="results" role="region" aria-labelledby="doctors-summary" tabindex="0">
+  <p id="doctors-summary">{{ doctors | length }} doctor{{ "" if doctors | length == 1 else "s" }} registered.</p>
+  <table>
+    <thead>
+      <tr><th scope="col">Name</th><th scope="col">Specialisation</th><th scope="col">Account</th><th scope="col">Status</th></tr>
+    </thead>
+    <tbody>
+      {% for doctor in doctors %}
+      <tr>
+        <td><a href="/doctors/{{ doctor.id }}">{{ doctor.full_name }}</a></td>
+        <td>{{ doctor.specialisation.label }}</td>
+        <td>{{ doctor.account.login }}</td>
+        <td>{{ "Active" if doctor.is_active else "Inactive" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="message notice" role="status">No doctors are registered yet.</p>
+{% endif %}
+{% endblock %}
