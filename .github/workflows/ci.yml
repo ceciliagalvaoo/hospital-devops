@@ -91,6 +91,15 @@ jobs:
           --cov-report=term-missing
           --cov-report=xml
           --cov-report="markdown-append:$GITHUB_STEP_SUMMARY"
+          --junitxml=test-reports/tests.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: test-results-tests
+          path: test-reports/
+          if-no-files-found: warn
 
       - name: Upload coverage report
         if: always()
@@ -144,6 +153,15 @@ jobs:
           --video retain-on-failure
           --tracing retain-on-failure
           --output test-results
+          --junitxml=test-reports/e2e.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: test-results-e2e
+          path: test-reports/
+          if-no-files-found: warn
 
       - name: Upload Playwright results of failed tests
         if: failure()
@@ -192,10 +210,19 @@ jobs:
         env:
           VERSION: ${{ steps.meta.outputs.version }}
 
-      - name: Run container smoke tests against the built image
-        run: pytest -m smoke -v
+      # Smoke tests and the black-box journeys, against the image that Publish will push.
+      - name: Run container smoke tests and black-box journeys against the built image
+        run: pytest -m smoke -v --junitxml=test-reports/container.xml
         env:
           SMOKE_IMAGE: hospital-devops:ci
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: test-results-container
+          path: test-reports/
+          if-no-files-found: warn
 
       - name: Save the tested image for publishing (main only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

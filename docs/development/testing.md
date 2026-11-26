@@ -50,6 +50,8 @@ The container smoke tests are marked `smoke` and excluded by default. They requi
 pytest -m smoke
 ```
 
+The black-box journeys in `tests/smoke/test_black_box_journey.py` are part of the smoke run: after seeding the development accounts, they use only HTTP against the running container, without application code, to log in as each role, open every area (HTTP 200 for the role's areas, 403 for the others), log out (HTTP 401 afterwards), and register and find a patient as the front desk while a doctor is refused. In CI they run against the image that is published (`SMOKE_IMAGE`).
+
 Each smoke run starts an isolated Compose project with settings based on `.env.example` and a free host port. It checks that PostgreSQL becomes healthy, migrations are applied to the latest revision before the application starts, `/health` reports the database status (HTTP 200, and HTTP 503 with the database stopped), the application does not run as root and the application does not start when the migration step fails. The project, its volume and its images are removed afterwards; a local `.env` is not used.
 
 The browser end-to-end tests are marked `e2e` and excluded by default as well. They use Playwright for Python with a headless Chromium and need the test database; install the browser once, then run them:
