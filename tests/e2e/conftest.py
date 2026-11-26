@@ -175,3 +175,19 @@ def doctor_profile(unlinked_doctor_account: E2EAccount, db_engine: Engine) -> in
         session.add(doctor)
         session.commit()
         return doctor.id
+
+
+@pytest.fixture
+def receptionist_to_deactivate(db_engine: Engine) -> E2EAccount:
+    """A synthetic active receptionist account for one test, which may deactivate it. The
+    account is deleted afterwards; its sessions are deleted with it."""
+    account = E2EAccount(f"e2e.leaver.{uuid.uuid4().hex[:8]}", Role.RECEPTIONIST)
+    with Session(db_engine) as session:
+        staff = StaffAccount(login=account.login, role=account.role)
+        staff.set_password(account.password)
+        session.add(staff)
+        session.commit()
+    yield account
+    with Session(db_engine) as session:
+        session.execute(delete(StaffAccount).where(StaffAccount.login == account.login))
+        session.commit()
