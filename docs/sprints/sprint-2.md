@@ -158,17 +158,106 @@ Each entry records the completed work, the next action and any blockers.
   - #21 T-15.2, the deactivation action: the staff list has an Action column, with "Deactivate" for each other active account and "Your account" for the administrator's own. The link opens a confirmation page that explains the effect and changes nothing; confirming deactivates the account (Post/Redirect/Get) and returns to the list with the account highlighted and a confirmation. Checked in Chromium against a running stack at 1000 px and 320 px: after the confirmation, the receptionist's open session received HTTP 401 at once.
   - #22 T-15.3, the acceptance and access tests of US-15: 37 tests, each deactivation through the API and the confirmation page, mapped in `docs/testing/us-15-automated-tests.md`. For each role, two sessions opened through the API and the login page are rejected at once on protected API requests and pages; later logins get the same answer as a wrong password, so the status of an account is not revealed. Six faults each fail them.
   - #23 T-15.4, the end-to-end test of US-15 in Chromium with two browser contexts: a receptionist stays logged in while an administrator opens the confirmation, cancels once (the receptionist keeps working), then deactivates it; the receptionist's next request gets HTTP 401 with the login page, and logging in again shows the wrong-password message. Receptionists and doctors are refused. With it, every task of US-15 is done.
-- **Next:** close US-15, then #188 on 2026-11-28: the Sprint 2 review and retrospective and the v0.3.0 release.
+  - US-15 (3 points) closed after every criterion was checked, with the image `sha-43ce741` (`0.3.0-dev.152`) published and verified; all seven stories are done, 23 of 23 points.
+- **Next:** #188 on 2026-11-28: the Sprint 2 review and retrospective and the v0.3.0 release.
 - **Blockers:** none. The local test environment had been removed with the session's temporary files and was recreated from `requirements-dev.txt`.
+
+### 2026-11-28
+
+- **Done:**
+  - Demonstration of the application to a classmate (§4.2), following a script prepared for the review evidence of [planning.md](../planning.md) §2.4.
+  - Sprint Review (§4): the seven stories accepted and closed, velocity 23 points; the feedback recorded and its backlog changes noted for the Sprint 3 planning (#189).
+  - Sprint Retrospective (§5), with the result of the Sprint 1 improvement action and one action for Sprint 3.
+  - [architecture.md](../architecture.md) updated to the end of Sprint 2: the patient, doctor and account modules, the rules shared by the APIs and the pages, the form responses, account deactivation, the tested image that is published, the coverage gate and the new design decisions.
+  - [branching-strategy.md](../development/branching-strategy.md) §4 lists `v0.3.0` as the latest release; release `v0.3.0` prepared (#188).
+- **Next:** release `v0.3.0` after this record is merged, then the Sprint 3 planning (#189) on 2026-11-29.
+- **Blockers:** none.
 
 ## 3. Increment
 
-To be completed in the Sprint Review (#188).
+The increment of Sprint 2 adds the first hospital functions to the Sprint 1 foundation: patient registration, search and contact updates for the front desk, doctor profiles with weekly availability, and administrative account management, each with a JSON API and pages that share the same rules, and with denied access for unauthorised roles. The implemented architecture is documented in [docs/architecture.md](../architecture.md).
+
+| Story | What it added | Pull requests | Documentation |
+| --- | --- | --- | --- |
+| US-03 (#30), 3 points | Patient table and migration, registration with validation and permissions, record number `P-000042` derived from the id, registration form and record page, acceptance, end-to-end and manual tests | #240, #241, #242, #243, #244, #245 | [running-locally.md](../development/running-locally.md), [testing/us-03-automated-tests.md](../testing/us-03-automated-tests.md), [testing/us-03-manual-checks.md](../testing/us-03-manual-checks.md) |
+| US-09 (#37), 2 points | Search by record number or by words of the name, with a limit of 50 results, a result list and an empty state | #246, #247, #248, #249 | [running-locally.md](../development/running-locally.md), [testing/us-09-automated-tests.md](../testing/us-09-automated-tests.md) |
+| US-10 (#42), 2 points | Update of the optional phone and e-mail with validation, edit form and save confirmation | #250, #251, #252, #253 | [running-locally.md](../development/running-locally.md), [testing/us-10-automated-tests.md](../testing/us-10-automated-tests.md) |
+| US-02 (#54), 5 points | Doctor and availability tables, registration linked to an existing doctor account, a fixed list of specialisations, weekly ranges on a 30-minute grid without overlap, registration form and profile, manual checks | #254, #255, #256, #257, #258, #259 | [running-locally.md](../development/running-locally.md), [testing/us-02-automated-tests.md](../testing/us-02-automated-tests.md), [testing/us-02-manual-checks.md](../testing/us-02-manual-checks.md) |
+| US-13 (#61), 3 points | Update of a doctor's name, specialisation and availability with the registration rules, the account link kept, edit form and confirmation | #266, #267, #268, #269 | [running-locally.md](../development/running-locally.md), [testing/us-13-automated-tests.md](../testing/us-13-automated-tests.md) |
+| US-14 (#14), 5 points | Account creation by administrators with the three roles, logins in lower case, password rules, account list and creation form | #262, #263, #264, #265 | [authentication.md](../development/authentication.md), [running-locally.md](../development/running-locally.md), [testing/us-14-automated-tests.md](../testing/us-14-automated-tests.md) |
+| US-15 (#19), 3 points | Deactivation by administrators that ends the account's sessions at once, without self-deactivation, with a confirmation page | #270, #271, #272, #273 | [authentication.md](../development/authentication.md), [running-locally.md](../development/running-locally.md), [testing/us-15-automated-tests.md](../testing/us-15-automated-tests.md) |
+
+Work done during the sprint outside the increment and the velocity: the defects #222 (PR #231) and #224 (PR #234) and the review follow-up #225 (PR #232); Lab 8 (#227–#230, PRs #233–#236), with the patch release `v0.2.1`; Lab 7 Task 6: the coverage gate #216 (PR #238), testing and publishing the same image #217 (PR #260) and the test plan #219 (PR #261); DOC-01 #169 (PR #239); the planning record #187 (PR #226) and this review (#188).
+
+**Evidence shown in the review** ([planning.md](../planning.md) §2.4):
+
+| Evidence | Where |
+| --- | --- |
+| Registration, search and updates | Live demonstration (§4.2): a patient registered, found by name and by record number, and its contacts updated; a doctor registered after an overlapping range was identified, then updated |
+| Account creation and deactivation | Live demonstration: an account created with a login in capitals, used in a private window, then deactivated, after which its open session and a new login were refused |
+| Denied actions for unauthorised roles | Live demonstration: "Access denied" for a receptionist on the doctor and staff pages and for a doctor on the patient and staff pages; the acceptance tests of each story assert HTTP 401 and 403 through the API and the pages |
+| A successful pipeline run | Run 45878612110 on `main` at `43ce741`: `Lint`, `Tests`, `E2E`, `Container`, `Publish` and `Verify image` passed |
+| A published image linked to its commit | `ghcr.io/ceciliagalvaoo/hospital-devops:sha-43ce741` (`0.3.0-dev.152`), whose `revision` label is the full SHA of `43ce741`, published from the image that the `Container` job tested |
+| Test results | In run 45878612110: 802 passed and 1 skipped with 100 % line and branch coverage of `app/` (1060 statements, 184 branches); 31 end-to-end tests passed and 1 skipped; 10 smoke tests and black-box journeys; 7 published-image tests |
 
 ## 4. Sprint Review
 
-To be completed on 2026-11-28 (#188).
+Held on 2026-11-28. The application was demonstrated on 2026-11-28 to a classmate who had seen the Sprint 1 demonstration (about 30 minutes, following a script prepared for the review evidence of [planning.md](../planning.md) §2.4, then free exploration), on the developer's computer in Chrome on Windows 11, with the Docker Compose stack at `43ce741` and the seeded development accounts.
+
+### 4.1 Stories
+
+| Story | Points | Acceptance criteria and Definition of Done | Result |
+| --- | --- | --- | --- |
+| US-03 Register a patient | 3 | All met | Accepted, closed |
+| US-09 Search for a patient | 2 | All met | Accepted, closed |
+| US-10 Edit patient contact details | 2 | All met | Accepted, closed |
+| US-02 Register a doctor | 5 | All met, including the manual checks of the form | Accepted, closed |
+| US-13 Update doctor details | 3 | All met; appointments do not exist yet, so their retention after an update is to be tested when US-04 is integrated in Sprint 3 (the update deletes nothing that refers to the doctor) | Accepted, closed |
+| US-14 Create staff accounts | 5 | All met | Accepted, closed |
+| US-15 Deactivate a staff account | 3 | All met | Accepted, closed |
+
+**Velocity:** 23 of 23 forecast points ([planning.md](../planning.md) §2.1). No work returns to the backlog, and no story is re-estimated. The measured velocities, 26 and 23 points, are the capacity reference for Sprint 3.
+
+### 4.2 Demonstration and feedback
+
+Each step of the demonstration worked as expected; no defect was found. The classmate's feedback, in summary:
+
+- **Clear:** the menus that change with the role; the validation messages that list every invalid field at once; patient registration, with the record number generated by the system, and the search by part of the name or by record number; the overlap reported on the row of the range; account creation with a login in capitals, which the classmate remembered as a limitation of Sprint 1; access checked on the server as well as hidden in the menu.
+- **Confusing:** the time fields shown with AM/PM, and the 30-minute rule for the availability not being visible enough before a time is entered.
+- **Missing:** booking appointments, the most important next step; reactivating a deactivated account.
+- **Trust:** the permissions and the immediate end of the sessions of a deactivated account inspire confidence; the main concern is deactivating an account by mistake without a way to restore it, although the confirmation page helps.
+- **Overall:** 8.5/10 — the application evolved a lot since Sprint 1 and has a consistent administrative structure; with appointments it will be much closer to a system usable day to day.
+
+### 4.3 Backlog changes
+
+| Finding | Decision |
+| --- | --- |
+| The 30-minute rule of the availability is not visible enough before a time is entered (the hint of the availability group states it) | Improvement to estimate in the Sprint 3 planning (#189) |
+| The time fields show AM/PM, which can confuse (Chrome's native time field follows the operating system's settings) | Low-priority interface improvement, noted for the Sprint 3 planning (#189) |
+| No way to reactivate a deactivated account | New story to write and estimate in the Sprint 3 planning (#189), with its authorisation and traceability rules |
+| No appointments yet | Already planned: appointments are the goal of Sprint 3 ([planning.md](../planning.md) §2.5) |
+| US-13: the retention of existing appointments after a doctor update cannot be tested yet | To test when US-04 is integrated in Sprint 3 |
 
 ## 5. Sprint Retrospective
 
-To be completed on 2026-11-28 (#188).
+Held on 2026-11-28, after the review.
+
+**What went well**
+
+- All 23 forecast points were done, together with two defects, Lab 8, Lab 7 Task 6 and the documentation restructuring, working one task at a time through the full cycle.
+- The rules of each area are shared by its JSON API and its pages, and the acceptance tests run every case through both channels; every task had mutation checks showing that its tests fail when the behaviour breaks.
+- The delivery pipeline now publishes and promotes the image that was tested, and the coverage gate of 100 % kept every new line and branch tested.
+- The finding of the Sprint 1 review about case-sensitive logins was implemented, and the classmate noticed it.
+
+**What went badly**
+
+- No work was done between 2026-11-19 and 2026-11-25, so US-02, US-13, US-14, US-15, #217 and #219 were all done on 2026-11-26, the last working day before the review. The plan held, but nothing was left for an unexpected problem.
+- The commit messages of #55 contained a co-author trailer that the Product Owner did not want; removing it needed a rewrite of the history of `main`, with the ruleset disabled for the force push (work log, 2026-11-26).
+- A manual check of US-02 (C4) was first reported as passed before it had been run; the application's request log showed it, and the missing checks were run before the result was recorded ([us-02-manual-checks.md](../testing/us-02-manual-checks.md)).
+- The demonstration script was prepared only on the day of the review.
+
+**Blockers:** none stopped the work.
+
+**Result of the Sprint 1 improvement action** (checklist before board changes and pull requests): **mostly kept**. The board status and the WIP limits were respected, with one task in progress at a time, and the pull-request texts followed the pattern of each task type. One description (PR #246) still had test counts that did not match the run, so the rule of copying numbers from their source was not always applied.
+
+**Improvement action for Sprint 3:** check progress at the midpoint of the sprint (2026-12-06) in the work log: if less than half of the forecast points is done, re-plan with the Product Owner on that day instead of concentrating the work at the end; and prepare the review demonstration script in the last week, before the last day. The result is checked in the Sprint 3 retrospective (#190).
