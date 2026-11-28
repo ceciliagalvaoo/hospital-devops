@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the architecture **as implemented**, at the end of Sprint 1 (2026-11-07, `main` at `d1d025c`). [tooling.md](tooling.md) §6 describes the planned architecture; this document is updated by the review of every sprint (#188, #190, #192), so it always matches the code.
+This document describes the architecture **as implemented**, at the end of Sprint 2 (2026-11-28, `main` at `43ce741`). [tooling.md](tooling.md) §6 describes the planned architecture; this document is updated by the review of every sprint (#188, #190, #192), so it always matches the code.
 
 ## 1. Overview
 
@@ -45,22 +45,26 @@ The image is a multi-stage build (`Dockerfile`, `docs/docker-build.md`): a build
 | `app/main.py` | Creates the FastAPI application: application-wide CSRF dependency, static files, routers, and the error handler that renders pages for browsers and JSON for API clients |
 | `app/routes/health.py` | `GET /health`: HTTP 200 with a working database, HTTP 503 otherwise |
 | `app/routes/auth.py` | JSON API: `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `GET /auth/csrf` |
-| `app/routes/pages.py` | Pages: `/login`, `/logout`, `/` and the area pages generated from `app/navigation.py` |
+| `app/routes/pages.py` | Pages: `/login`, `/logout`, `/` and the placeholder area pages generated from `app/navigation.py` |
+| `app/routes/patients.py`, `app/routes/patient_pages.py` | Patients (US-03, US-09, US-10): JSON API under `/api/patients` and the pages under `/patients` (registration, search, record, contact edit) |
+| `app/routes/doctors.py`, `app/routes/doctor_pages.py` | Doctors (US-02, US-13): JSON API under `/api/doctors` and the pages under `/doctors` (list, registration, profile, edit) |
+| `app/routes/staff.py`, `app/routes/staff_pages.py` | Staff accounts (US-14, US-15): JSON API under `/api/staff` and the pages under `/staff` (list, creation, deactivation confirmation) |
+| `app/patients.py`, `app/doctors.py`, `app/accounts.py` | Business rules of each area, shared by its JSON API and its pages: validation that reports every invalid field at once (`Invalid*` errors with a message per field), registration, search, updates, account creation and deactivation |
 | `app/access.py` | Reusable dependencies: `CurrentAccount` (HTTP 401) and `require_roles(...)` (HTTP 403) |
 | `app/auth.py` | Credential check, server-side session creation, lookup and deletion, session cookie helpers |
 | `app/csrf.py` | CSRF token issue and check, applied to every state-changing request |
 | `app/navigation.py` | The areas of the application and the roles that may open them (RBAC matrix, [requirements.md](requirements.md) §2.2) |
 | `app/templating.py` | Renders Jinja2 pages with the CSRF token, the logged-in account and its navigation |
 | `app/security.py` | bcrypt hashing and verification (cost factor 12, at most 72 bytes) |
-| `app/models/` | SQLAlchemy models: `StaffAccount`, `StaffSession`, `Role` |
+| `app/models/` | SQLAlchemy models: `StaffAccount`, `StaffSession`, `Role`, `Patient`, `Doctor`, `AvailabilityRange`, `Specialisation`, `Weekday` |
 | `app/db.py` | Engine from `DATABASE_URL`, per-request database session, naming convention of constraints, database availability check |
 | `app/seed.py` | Development-only command that creates one account per role |
-| `app/templates/`, `app/static/` | Page templates and the stylesheet |
-| `migrations/` | Alembic environment and revisions `0001` (baseline), `0002` (staff accounts), `0003` (staff sessions) |
+| `app/templates/`, `app/static/` | Page templates, with shared form macros (`_form.html`, `_availability.html`), and the stylesheet |
+| `migrations/` | Alembic environment and revisions `0001` (baseline), `0002` (staff accounts), `0003` (staff sessions), `0004` (patients), `0005` (doctors and availability) |
 | `scripts/image_metadata.py` | Computes the version label and the image tags of a CI publication |
 | `tests/` | Unit, integration, end-to-end, container smoke, published-image and CI contract tests (§6) |
 
-Dependencies point inwards: routes use `access`, `auth`, `csrf` and `templating`; these use the models and `db`; the models use `security`. The only import between routes is the shared login error message, which `pages.py` takes from `routes/auth.py`.
+Dependencies point inwards: routes use the rules modules, `access`, `auth`, `csrf` and `templating`; these use the models and `db`; the models use `security`. The API and the page of the same action call the same rules function, so both channels accept and refuse the same data; the acceptance tests run every case through both. The only import between routes is the shared login error message, which `pages.py` takes from `routes/auth.py`.
 
 ## 3. Data model
 
@@ -110,10 +114,10 @@ erDiagram
     }
 ```
 
-- **Staff accounts** are the only users; patients are data, not users ([requirements.md](requirements.md) §2.1). The role is stored as text with a check constraint (`native_enum=False`), so new roles need no PostgreSQL enum migration.
+- **Staff accounts** are the only users; patients are data, not users ([requirements.md](requirements.md) §2.1). The role is stored as text with a check constraint (`native_enum=False`), so new roles need no PostgreSQL enum migration. Logins are stored and compared in lower case (decided in the Sprint 2 planning, #15). Administrators create accounts (US-14) and deactivate them (US-15); an account is never deleted, and an administrator cannot deactivate its own account, so at least one active administrator remains.
 - **Patients** hold administrative data only, never clinical notes. Only the name and the date of birth are required (US-03); the contact details are an optional phone and e-mail. The identifier used by staff and by patient search (US-09) is the **record number** `P-` followed by the id with six digits, derived from the id assigned by the database, so it is unique, never changes and needs no column; no national document number is collected (data minimisation). Both choices were made by the Product Owner on 2026-11-18 (#31). Patients are deactivated instead of deleted, so their history remains (US-17).
-- **Doctors** are profiles of staff accounts with the doctor role, at most one per account, so a doctor logs in with that account; the account cannot be deleted while it has a profile. The specialisation comes from a fixed list in `app/models/doctor.py`, and the availability is a set of **weekly ranges** (weekday, start and end time) that repeat every week and are removed with the profile; the database rejects malformed ranges, and the registration rules (#56) also require ranges on a 30-minute grid that do not overlap on the same day. Choosing an existing doctor account, the fixed list and weekly ranges were decided by the Product Owner on 2026-11-26 (#55). Doctors are deactivated instead of deleted, so their appointments remain (US-16).
-- **Sessions** are stored server-side, so logout and deactivation take effect immediately. Only a hash of the random cookie token is stored; a database leak does not reveal usable tokens.
+- **Doctors** are profiles of staff accounts with the doctor role, at most one per account, so a doctor logs in with that account; the account cannot be deleted while it has a profile. The specialisation comes from a fixed list in `app/models/doctor.py`, and the availability is a set of **weekly ranges** (weekday, start and end time) that repeat every week and are removed with the profile; the database rejects malformed ranges, and the registration and update rules (#56, #62) also require ranges on a 30-minute grid that do not overlap on the same day. An update replaces the name, the specialisation and the ranges; the profile stays linked to its account (US-13). Choosing an existing doctor account, the fixed list and weekly ranges were decided by the Product Owner on 2026-11-26 (#55). Doctors are deactivated instead of deleted, so their appointments remain (US-16).
+- **Sessions** are stored server-side, so logout and deactivation take effect immediately: deactivating an account deletes its sessions, and a session of an inactive account is rejected in any case. Only a hash of the random cookie token is stored; a database leak does not reveal usable tokens.
 - **Migrations** are the only way to change the schema. Constraint names follow a fixed naming convention (`pk_`, `uq_`, `ck_`, `fk_`, `ix_` in `app/db.py`), so migrations are reviewable and reversible. A test compares the models with the migrations (`alembic check` equivalent) and every revision is applied and rolled back in the test database.
 
 ## 4. Request flow
@@ -149,7 +153,8 @@ sequenceDiagram
 1. **CSRF** (`app/csrf.py`): for `POST`, `PUT`, `PATCH` and `DELETE`, the request is refused with HTTP 403 when its `Origin` is another site (or `Sec-Fetch-Site: cross-site`), or when the token in the form field `csrf_token` or the header `X-CSRF-Token` is missing or wrong. The token is an HMAC, with a key generated at start-up, of the session cookie, or of the pre-session cookie `hospital_csrf` before login; it changes with every login. Safe methods are not checked and never change state.
 2. **Authentication** (`CurrentAccount`): the `hospital_session` cookie (`HttpOnly`, `SameSite=Lax`, eight hours, `Secure` when `SESSION_COOKIE_SECURE=true`) is hashed and looked up; expired sessions and sessions of inactive accounts are deleted and the request receives HTTP 401.
 3. **Authorisation** (`require_roles`): the route's allowed roles come from the RBAC matrix ([requirements.md](requirements.md) §2.2); other roles receive HTTP 403. Authentication is always checked first, so a request without a session never receives 403.
-4. **Responses** (`app/main.py`): browsers (`Accept: text/html`) receive the login page with HTTP 401 or an error page titled by the reason with HTTP 403/404; other clients receive the JSON error. The status codes are the same for both (NFR-04).
+4. **Responses** (`app/main.py`): browsers (`Accept: text/html`) receive the login page with HTTP 401 or an error page titled by the reason with HTTP 403/404; other clients receive the JSON error. The status codes are the same for both (NFR-04). Every response except the static files carries `Cache-Control: no-store`, so the browser keeps no copy of a page with account data (#222).
+5. **Forms**: invalid data returns HTTP 422, from the API as `{"detail", "errors"}` with a message per field, and from the pages as the form with the submitted values, an error summary and the messages next to the fields. A valid page submission redirects (Post/Redirect/Get), so a reload never submits twice.
 
 Login (`POST /login` or `/auth/login`) checks the password with bcrypt, also for unknown logins against a dummy hash, so response times do not reveal which logins exist; wrong passwords, unknown logins and inactive accounts receive the same message. A successful login replaces the browser's previous session.
 
@@ -174,21 +179,21 @@ flowchart LR
 ```
 
 - **Pull requests** run `Lint`, `Tests`, `E2E` and `Container`, which are required checks of the ruleset on `main`, together with an up-to-date branch and merge commits only (`docs/development/branching-strategy.md` §3 and §7). Failed end-to-end tests keep screenshots, videos and traces as the `playwright-results` artifact.
-- **Pushes to `main`** run the same checks; `Container` builds the image once and smoke-tests it, and `Publish` pushes that tested image as `sha-<commit>`, `X.Y.Z-dev.N` and `dev` (one digest). **Version tags** run the release workflow, which never builds: it promotes the tested image of the tagged commit to `X.Y.Z-rc.N` and `rc`, or, after the approval of the `production` environment, to `X.Y.Z`, `X.Y` and `latest`, and creates the GitHub Release (`docs/docker-build.md`, "Versioning and image tags"; `docs/versioning.md`).
+- **Pushes to `main`** run the same checks; `Container` builds the image once and runs the smoke tests and the black-box journeys against it (#217), and `Publish` loads that tested image from the workflow artifact, without building, and pushes it as `sha-<commit>`, `X.Y.Z-dev.N` and `dev` (one digest). **Version tags** run the release workflow, which never builds: it promotes the tested image of the tagged commit to `X.Y.Z-rc.N` and `rc`, or, after the approval of the `production` environment, to `X.Y.Z`, `X.Y` and `latest`, and creates the GitHub Release (`docs/docker-build.md`, "Versioning and image tags"; `docs/versioning.md`).
 - **Verify image** then pulls the `sha-<commit>` tag without credentials, starts it with PostgreSQL and checks health, the login page, the non-root user and the labels.
 
 ## 6. Tests
 
 | Layer | Location | Runs | What it covers |
 | --- | --- | --- | --- |
-| Unit | `tests/test_*.py` | `pytest` (default), `Tests` job | hashing, health route, image tag computation |
-| Integration | `tests/integration/` | `pytest` (default), `Tests` job | models, migrations, sessions, 401/403, CSRF, pages, against an isolated PostgreSQL database inside a rolled-back transaction per test |
+| Unit | `tests/test_*.py` | `pytest` (default), `Tests` job | hashing, health route, image tag computation, patient, doctor and account rules |
+| Integration | `tests/integration/` | `pytest` (default), `Tests` job | models, migrations, sessions, 401/403, CSRF, the APIs and pages, and the acceptance tests of each story (`test_usNN_*.py`) through both channels, against an isolated PostgreSQL database inside a rolled-back transaction per test |
 | CI contract | `tests/ci/` | `pytest` (default), `Tests` job | the workflow rules that the required checks and the publication rely on |
-| End-to-end | `tests/e2e/` | `pytest -m e2e`, `E2E` job | login, navigation and logout per role in headless Chromium, small screens |
-| Container smoke | `tests/smoke/` | `pytest -m smoke`, `Container` job | the Compose stack built from the Dockerfile |
+| End-to-end | `tests/e2e/` | `pytest -m e2e`, `E2E` job | login, navigation and logout per role, and one workflow per story (registration, search, updates, account creation and deactivation, denied roles), in headless Chromium |
+| Container smoke | `tests/smoke/` | `pytest -m smoke`, `Container` job | the Compose stack built from the Dockerfile, and black-box journeys over HTTP against the image that is published (#217) |
 | Published image | `tests/published/` | `pytest -m published`, `Verify image` job | the image pulled from GHCR |
 
-Manual checks and the map of tests per story are in `docs/testing/`.
+The `Tests` job fails below 100 % line and branch coverage of `app/` (`.coveragerc`, #216). The test plan is [testing.md](testing.md); manual checks and the map of tests per story are in `docs/testing/`.
 
 ## 7. Configuration
 
@@ -219,10 +224,20 @@ No secret is stored in the repository or the image. The CSRF key is generated at
 | Four required checks, up-to-date branch, merge commits only | Failed checks block merging (NFR-06); history shows each task's branch | #141 (PR #208), #143 (PR #210) |
 | Publication only from `main` and release tags, with commit-SHA tags and labels | Every image traceable to its commit; pull requests never publish (NFR-05, NFR-08) | #146 (PR #211), #147 (PR #212), #149 (PR #214) |
 | Published image verified by an anonymous pull | Proves that the delivered artifact works and is publicly available | #148 (PR #213) |
+| `Cache-Control: no-store` on every non-static response | After logout, the Back button cannot show a page with account data | #222 (PR #231) |
+| API documentation only with `APP_ENV=development` | The published image does not expose the API description | #225 (PR #232) |
+| Build once, test and publish the same image, promote it to rc and release without rebuilding | The released artifact is the one that passed the checks | #228 (PR #234), #217 (PR #260) |
+| Coverage gate of 100 % of lines and branches | Untested code cannot be merged | #216 (PR #238) |
+| One rules module per area, shared by the JSON API and the pages | Both channels apply the same rules; every invalid field is reported at once | #32 (PR #241), #56 (PR #255), #15 (PR #262) |
+| Record number derived from the patient id | Unique and stable without an extra column; no national document number (data minimisation) | #31 (PR #240) |
+| Logins in lower case | `Dev.Doctor` and `dev.doctor` are the same account (Sprint 1 review feedback) | #15 (PR #262) |
+| Doctor availability as weekly ranges on a 30-minute grid, no overlap on the same day | Simple to edit, and ready for appointment slots | #55 (PR #254), #56 (PR #255) |
+| Deactivation keeps the account and deletes its sessions; no self-deactivation | Records stay intact, access ends at once, and an active administrator always remains | #20 (PR #270) |
 
 ## 9. Not yet implemented
 
 These parts of the planned architecture belong to later sprints:
 
-- Patients, doctors, appointments and medical records, with their tables and the doctor-specific scoping of access (Sprints 2 and 3; the area pages are placeholders until then).
+- Appointments and medical records, with their tables and the doctor-specific scoping of access (Sprint 3; their area pages are placeholders until then), and the deactivation of doctors and patients (US-16, US-17).
+- Reactivation of a deactivated staff account (feedback of the Sprint 2 review, to be decided in the Sprint 3 planning).
 - An automatic restart policy and the recovery check (NFR-02), performance tests (NFR-01) and monitoring with a metrics dashboard (NFR-07), in US-25 and US-26 (Sprint 4).
